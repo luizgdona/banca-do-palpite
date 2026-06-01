@@ -13,7 +13,11 @@ import { poolsRoutes } from './modules/pools/pools.routes.js';
 import { predictionsRoutes } from './modules/predictions/predictions.routes.js';
 import { rankingsRoutes } from './modules/rankings/rankings.routes.js';
 import { syncRoutes } from './modules/sync/sync.routes.js';
+import { wsRoutes } from './modules/websocket/ws.routes.js';
+import { startLiveScoresWorker, scheduleLiveScoresJob, stopLiveScoresWorker } from './modules/sync/live-scores.job.js';
+import { stopRedisSubscriber } from './modules/websocket/redis-subscriber.js';
 import { getRedis, closeRedis } from './config/redis.js';
+import websocketPlugin from '@fastify/websocket';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -39,6 +43,7 @@ export async function buildApp() {
   });
 
   await fastify.register(cookie);
+  await fastify.register(websocketPlugin);
 
   await fastify.register(rateLimit, {
     max: 100,
@@ -49,12 +54,22 @@ export async function buildApp() {
   const prisma = new PrismaClient();
   fastify.decorate('prisma', prisma);
   fastify.addHook('onClose', async () => {
+    await stopLiveScoresWorker();
+    await stopRedisSubscriber();
     await prisma.$disconnect();
     await closeRedis();
   });
 
   // Initialize Redis connection eagerly
   getRedis();
+
+  // Start BullMQ live-scores worker and schedule repeatable job
+  if (env.NODE_ENV !== 'test') {
+    startLiveScoresWorker(prisma);
+    scheduleLiveScoresJob().catch((err) =>
+      fastify.log.error('[LiveScores] schedule error:', err),
+    );
+  }
 
   // Error handler
   fastify.setErrorHandler(errorHandler);
@@ -68,6 +83,7 @@ export async function buildApp() {
   await fastify.register(predictionsRoutes, { prefix: '/api' });
   await fastify.register(rankingsRoutes, { prefix: '/api' });
   await fastify.register(syncRoutes, { prefix: '/api' });
+  await fastify.register(wsRoutes);  // WebSocket — sem prefix, rota é /ws
 
   // Health check
   fastify.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));

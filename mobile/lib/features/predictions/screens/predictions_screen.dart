@@ -8,6 +8,7 @@ import '../../../core/models/match_model.dart';
 import '../../../core/models/pool_model.dart';
 import '../../../core/models/prediction_model.dart';
 import '../../../core/providers/predictions_provider.dart';
+import '../../../core/providers/realtime_provider.dart';
 import '../../../core/theme/app_colors.dart';
 
 class PredictionsScreen extends ConsumerStatefulWidget {
@@ -30,7 +31,11 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen> {
   @override
   Widget build(BuildContext context) {
     final predictionsAsync = ref.watch(predictionsProvider);
-    final matches = widget.pool.poolMatches.map((pm) => pm.match).toList()
+    // Use live data from WS provider if available, fall back to pool snapshot
+    final liveMap = ref.watch(liveMatchesProvider).valueOrNull ?? {};
+    final matches = widget.pool.poolMatches
+        .map((pm) => liveMap[pm.match.id] ?? pm.match)
+        .toList()
       ..sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
 
     // Group by date

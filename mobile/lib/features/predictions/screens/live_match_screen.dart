@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/models/match_model.dart';
 import '../../../core/models/pool_model.dart';
 import '../../../core/providers/predictions_provider.dart';
+import '../../../core/providers/realtime_provider.dart';
 import '../../../core/theme/app_colors.dart';
 
 class LiveMatchScreen extends ConsumerWidget {
@@ -14,10 +15,13 @@ class LiveMatchScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final match = pool.poolMatches
-        .map((pm) => pm.match)
-        .where((m) => m.id == matchId)
-        .firstOrNull;
+    // Prefer live data from WS provider — updates in real time
+    final liveMap = ref.watch(liveMatchesProvider).valueOrNull ?? {};
+    final match = liveMap[matchId] ??
+        pool.poolMatches
+            .map((pm) => pm.match)
+            .where((m) => m.id == matchId)
+            .firstOrNull;
 
     if (match == null) {
       return const Scaffold(

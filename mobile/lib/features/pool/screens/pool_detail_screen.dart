@@ -8,6 +8,7 @@ import '../../../core/models/match_model.dart';
 import '../../../core/models/pool_model.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/providers/pools_provider.dart';
+import '../../../core/providers/realtime_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../predictions/screens/predictions_screen.dart';
 import '../../ranking/screens/ranking_screen.dart';
@@ -50,6 +51,12 @@ class _PoolDetailViewState extends ConsumerState<_PoolDetailView>
   void initState() {
     super.initState();
     _tabs = TabController(length: 3, vsync: this);
+    // Seed live matches and connect to WebSocket for this pool
+    Future.microtask(() {
+      final pool = widget.pool;
+      final matches = pool.poolMatches.map((pm) => pm.match).toList();
+      ref.read(liveMatchesProvider.notifier).initForPool(pool.id, matches);
+    });
   }
 
   @override
