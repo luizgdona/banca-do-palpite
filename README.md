@@ -1,45 +1,45 @@
-# Banca do Palpite
+# banca-do-palpite
 
-**Bolão de amigos. Placar em tempo real.**
+**Friends' prediction pool. Live scores.**
 
-App de bolão esportivo com palpites, ranking e atualizações ao vivo via WebSocket. Funciona como web app (PWA) e app Android/iOS via Flutter.
+Sports prediction pool app with match guesses, live scoring via WebSocket, and real-time rankings. Runs as a PWA and native Android/iOS app built with Flutter.
 
 ---
 
-## Estrutura
+## Structure
 
 ```
-banca_do_palpite/
+banca-do-palpite/
   backend/    — Node.js + Fastify + TypeScript + Prisma + PostgreSQL + Redis + BullMQ
   mobile/     — Flutter (Web + Android + iOS) + Riverpod + go_router
 ```
 
 ---
 
-## Início rápido
+## Quick start
 
-### 1. Banco de dados (Docker)
+### 1. Database (Docker)
 
 ```bash
 cd backend
 docker-compose up -d
 ```
 
-Sobe PostgreSQL 16 na porta 5432 e Redis 7 na porta 6379.
+Starts PostgreSQL 16 on port 5432 and Redis 7 on port 6379.
 
 ### 2. Backend
 
 ```bash
 cd backend
-cp .env.example .env      # preencha as variáveis obrigatórias (ver abaixo)
+cp .env.example .env      # fill in required variables (see below)
 npm install
 npx prisma migrate dev --name init
 npm run dev
 ```
 
-Servidor em `http://localhost:3000` — health check: `GET /health`
+Server at `http://localhost:3000` — health check: `GET /health`
 
-WebSocket em `ws://localhost:3000/ws?token=<jwt>`
+WebSocket at `ws://localhost:3000/ws?token=<jwt>`
 
 ### 3. Flutter
 
@@ -52,47 +52,47 @@ flutter run -d <device-id>    # Android / iOS
 
 ---
 
-## Variáveis de ambiente
+## Environment variables
 
-Copie `backend/.env.example` para `backend/.env` e preencha:
+Copy `backend/.env.example` to `backend/.env` and fill in:
 
-| Variável | Obrigatória | Descrição |
+| Variable | Required | Description |
 |---|---|---|
-| `JWT_SECRET` | ✅ | String longa e aleatória (`openssl rand -hex 32`) |
-| `REFRESH_TOKEN_SECRET` | ✅ | Idem, valor diferente do anterior |
-| `DATABASE_URL` | ✅ | Já preenchida para o Docker local |
-| `REDIS_URL` | ✅ | Já preenchida para o Docker local |
-| `API_FOOTBALL_KEY` | ⚠️ | Obtenha em [api-football.com](https://api-football.com) — gratuito: 100 req/dia |
-| `SYNC_ADMIN_KEY` | ⚠️ | Protege endpoints `/sync/*` em produção |
-| `FIREBASE_*` | 🔜 | Fase 5 — push notifications |
-| `GOOGLE_CLIENT_*` | 🔜 | Fase 5 — OAuth Google |
-| `RESEND_API_KEY` | 🔜 | Fase 5 — emails |
+| `JWT_SECRET` | ✅ | Long random string (`openssl rand -hex 32`) |
+| `REFRESH_TOKEN_SECRET` | ✅ | Same — use a different value |
+| `DATABASE_URL` | ✅ | Pre-filled for local Docker |
+| `REDIS_URL` | ✅ | Pre-filled for local Docker |
+| `API_FOOTBALL_KEY` | ⚠️ | Get at [api-football.com](https://api-football.com) — free tier: 100 req/day |
+| `SYNC_ADMIN_KEY` | ⚠️ | Protects `/sync/*` endpoints in production |
+| `FIREBASE_*` | 🔜 | Push notifications (see setup below) |
+| `GOOGLE_CLIENT_*` | 🔜 | Google OAuth |
+| `RESEND_API_KEY` | 🔜 | Transactional email |
 
-> **Nunca commite o arquivo `.env`.** Ele já está no `.gitignore`.
+> **Never commit `.env`.** It is already listed in `.gitignore`.
 
 ---
 
-## Ativar push notifications (Firebase)
+## Enabling push notifications (Firebase)
 
-1. Crie um projeto no [Firebase Console](https://console.firebase.google.com)
-2. **Android:** baixe `google-services.json` → coloque em `mobile/android/app/`
-   (template em `mobile/android/app/google-services.json.example`)
-3. **iOS:** baixe `GoogleService-Info.plist` → coloque em `mobile/ios/Runner/`
-   (template em `mobile/ios/Runner/GoogleService-Info.plist.example`)
-4. No backend, preencha no `.env`:
+1. Create a project in [Firebase Console](https://console.firebase.google.com)
+2. **Android:** download `google-services.json` → place in `mobile/android/app/`
+   (template at `mobile/android/app/google-services.json.example`)
+3. **iOS:** download `GoogleService-Info.plist` → place in `mobile/ios/Runner/`
+   (template at `mobile/ios/Runner/GoogleService-Info.plist.example`)
+4. In `backend/.env`, fill in:
    ```
-   FIREBASE_PROJECT_ID=seu-project-id
+   FIREBASE_PROJECT_ID=your-project-id
    FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
-   FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@projeto.iam.gserviceaccount.com
+   FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@project.iam.gserviceaccount.com
    ```
-5. No `mobile/pubspec.yaml`, descomente `firebase_core` e `firebase_messaging`
-6. Em `lib/core/providers/firebase_provider.dart`, substitua os stubs pelo código real
+5. In `mobile/pubspec.yaml`, uncomment `firebase_core` and `firebase_messaging`
+6. In `lib/core/providers/firebase_provider.dart`, replace the stubs with real code
 
-> Sem Firebase configurado, o app funciona normalmente — notificações são ignoradas silenciosamente.
+> Without Firebase configured, the app runs normally — notifications are silently ignored.
 
-## Ativar deep links (Android)
+## Enabling deep links (Android)
 
-Em `android/app/src/main/AndroidManifest.xml`, adicione dentro de `<activity>`:
+In `android/app/src/main/AndroidManifest.xml`, add inside `<activity>`:
 ```xml
 <intent-filter android:autoVerify="true">
   <action android:name="android.intent.action.VIEW"/>
@@ -104,73 +104,90 @@ Em `android/app/src/main/AndroidManifest.xml`, adicione dentro de `<activity>`:
 
 ---
 
-## API — Endpoints principais
+## API — Main endpoints
 
 ```
-POST /api/auth/register          Criar conta
+POST /api/auth/register          Create account
 POST /api/auth/login             Login
-POST /api/auth/refresh           Renovar access token (via cookie)
+POST /api/auth/refresh           Refresh access token (via httpOnly cookie)
 POST /api/auth/logout
+POST /api/auth/google            Google OAuth login
+POST /api/auth/fcm-token         Register FCM device token
 
-GET  /api/competitions           Listar competições (auth)
+GET  /api/competitions           List competitions (auth required)
 GET  /api/competitions/:id/matches
 
-POST /api/pools                  Criar bolão
-GET  /api/pools                  Meus bolões
-GET  /api/pools/:id              Detalhes + jogos
-GET  /api/pools/join/:code       Preview público de convite (sem auth)
-POST /api/pools/join/:code/confirm  Entrar no bolão
+POST /api/pools                  Create pool
+GET  /api/pools                  My pools
+GET  /api/pools/:id              Pool details + matches
+GET  /api/pools/join/:code       Public invite preview (no auth)
+POST /api/pools/join/:code/confirm  Join pool
 
-POST /api/pools/:id/predictions         Salvar palpite
-POST /api/pools/:id/predictions/batch   Salvar múltiplos
-GET  /api/pools/:id/predictions/me      Meus palpites
-GET  /api/pools/:id/matches/:mid/predictions  Palpites revelados
+POST /api/pools/:id/predictions         Save prediction
+POST /api/pools/:id/predictions/batch   Save multiple predictions
+GET  /api/pools/:id/predictions/me      My predictions
+GET  /api/pools/:id/matches/:mid/predictions  Revealed predictions (after kick-off)
 
-GET  /api/pools/:id/ranking             Ranking geral
-GET  /api/pools/:id/ranking/matches     Breakdown por jogo
+GET  /api/pools/:id/ranking             Overall ranking
+GET  /api/pools/:id/ranking/matches     Points breakdown per match
 
-WS   /ws?token=<jwt>            WebSocket tempo real
+WS   /ws?token=<jwt>            Real-time WebSocket
 ```
 
 ---
 
-## Arquitetura de tempo real
+## Real-time architecture
 
 ```
-API-Football (60s) → BullMQ Worker
+API-Football (60s poll) → BullMQ Worker
     → prisma.match.update()
     → Redis PUBLISH match:updated:{matchId}
     → Redis Subscriber → ConnectionManager
-    → WebSocket broadcast para clientes do bolão
+    → WebSocket broadcast to pool subscribers
     → Flutter WsManager stream
-    → LiveMatchesNotifier patch reativo
-    → UI atualiza sem setState
+    → LiveMatchesNotifier reactive patch
+    → UI updates without setState
 ```
 
-Quando o jogo termina: `calculate-points` executa, pontos são creditados, ranking é invalidado e broadcast via `pool:ranking_updated`.
+When a match finishes: `calculate-points` runs atomically, points are credited, ranking is invalidated, and a `pool:ranking_updated` broadcast is sent.
 
 ---
 
-## Fases de desenvolvimento
+## Running tests
 
-- [x] **Fase 1** — Base: Docker, Fastify, Prisma schema completo, Auth (register/login/refresh/logout), Flutter tema + telas de auth
-- [x] **Fase 2** — Core do Bolão: competitions + sync API-Football, CRUD pools, invite code, telas Flutter (criar bolão stepper, detalhes, convite QR)
-- [x] **Fase 3** — Palpites e Ranking: predictions com validação temporal server-side, calculate-points atômico e idempotente, ranking com tiebreaker, telas Flutter inline com debounce
-- [x] **Fase 4** — Tempo Real: WebSocket autenticado, Redis pub/sub, BullMQ live-scores job, reconexão exponential backoff no Flutter
-- [x] **Fase 5** — Polimento: push notifications Firebase (lazy init), OAuth Google, deep links, perfil, configurações de notificação, PWA manifest, 28 testes unitários
-- [x] **Cobertura de testes TDD** — 102 testes backend (12 arquivos: unit + integration) + 50 testes Flutter (models, websocket, widgets) = 152 testes, 0 falhas
+```bash
+# Backend (vitest) — no database required
+cd backend
+npm test
+
+# Flutter
+cd mobile
+flutter test
+```
+
+---
+
+## Development phases
+
+- [x] **Phase 1** — Foundation: Docker, Fastify, full Prisma schema, Auth (register/login/refresh/logout), Flutter theme + auth screens
+- [x] **Phase 2** — Pool core: competitions + API-Football sync, CRUD pools, invite code, Flutter screens (pool stepper, details, QR invite)
+- [x] **Phase 3** — Predictions & Ranking: server-side time validation, atomic idempotent calculate-points, tiebreaker ranking, inline Flutter predictions with debounce
+- [x] **Phase 4** — Real-time: authenticated WebSocket, Redis pub/sub, BullMQ live-scores job, exponential backoff reconnection in Flutter
+- [x] **Phase 5** — Polish: Firebase push notifications (lazy init), Google OAuth, deep links, profile screen, notification settings, PWA manifest
+- [x] **TDD test coverage** — 102 backend tests (12 files: unit + integration) + 50 Flutter tests (models, websocket, widgets) = **152 tests, 0 failures**
 
 ---
 
 ## Stack
 
-| Camada | Tecnologia |
+| Layer | Technology |
 |---|---|
 | Backend | Node.js, Fastify 4, TypeScript, Prisma 5 |
-| Banco | PostgreSQL 16, Redis 7 |
+| Database | PostgreSQL 16, Redis 7 |
 | Jobs | BullMQ, ioredis |
-| Auth | JWT (15min) + Refresh token httpOnly cookie (30d) |
-| API esportiva | API-Football v3 (cache Redis agressivo) |
+| Auth | JWT (15 min) + Refresh token httpOnly cookie (30 days) |
+| Sports API | API-Football v3 (aggressive Redis caching) |
 | Mobile/Web | Flutter, Riverpod 2, go_router 13, Dio |
-| Tempo real | WebSocket (@fastify/websocket + web_socket_channel) |
-| Infra local | Docker Compose |
+| Real-time | WebSocket (@fastify/websocket + web_socket_channel) |
+| Local infra | Docker Compose |
+| Testing | Vitest (backend), flutter_test (Flutter) |

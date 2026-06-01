@@ -1,5 +1,5 @@
 name: banca_do_palpite
-description: "Bolão de amigos. Placar em tempo real."
+description: "Friends' prediction pool. Live scores."
 publish_to: 'none'
 version: 1.0.0+1
 
