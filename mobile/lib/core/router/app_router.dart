@@ -10,6 +10,7 @@ import '../../features/home/screens/home_screen.dart';
 import '../../features/pool/screens/create_pool_screen.dart';
 import '../../features/pool/screens/pool_detail_screen.dart';
 import '../../features/pool/screens/join_pool_screen.dart';
+import '../../features/predictions/screens/live_match_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authAsync = ref.watch(authProvider);
@@ -46,6 +47,22 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/pool/:id',
         builder: (_, state) => PoolDetailScreen(poolId: state.pathParameters['id']!),
+        routes: [
+          GoRoute(
+            path: 'match/:matchId',
+            builder: (_, state) {
+              // Pool is passed via extra to avoid refetching
+              final pool = state.extra;
+              if (pool == null) {
+                return PoolDetailScreen(poolId: state.pathParameters['id']!);
+              }
+              return LiveMatchScreen(
+                pool: pool as dynamic,
+                matchId: state.pathParameters['matchId']!,
+              );
+            },
+          ),
+        ],
       ),
       GoRoute(
         path: '/join/:code',

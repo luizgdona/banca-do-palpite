@@ -9,6 +9,8 @@ import '../../../core/models/pool_model.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/providers/pools_provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../predictions/screens/predictions_screen.dart';
+import '../../ranking/screens/ranking_screen.dart';
 
 class PoolDetailScreen extends ConsumerWidget {
   final String poolId;
@@ -128,8 +130,8 @@ class _PoolDetailViewState extends ConsumerState<_PoolDetailView>
         body: TabBarView(
           controller: _tabs,
           children: [
-            _GamesTab(pool: pool),
-            _RankingTab(pool: pool),
+            PredictionsScreen(pool: pool),
+            RankingScreen(poolId: pool.id),
             _MembersTab(pool: pool, isOwner: isOwner),
           ],
         ),
@@ -149,33 +151,7 @@ class _PoolDetailViewState extends ConsumerState<_PoolDetailView>
   }
 }
 
-// ── Aba Jogos ─────────────────────────────────────────────────────────────────
-
-class _GamesTab extends StatelessWidget {
-  final PoolModel pool;
-  const _GamesTab({required this.pool});
-
-  @override
-  Widget build(BuildContext context) {
-    final matches = pool.poolMatches.map((pm) => pm.match).toList()
-      ..sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
-
-    if (matches.isEmpty) {
-      return Center(
-        child: Text(
-          'Nenhum jogo neste bolão.',
-          style: GoogleFonts.dmSans(color: AppColors.mutedDark),
-        ),
-      );
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: matches.length,
-      itemBuilder: (context, i) => _MatchCard(match: matches[i], pool: pool),
-    );
-  }
-}
+// ── Aba Membros (mantida) ─────────────────────────────────────────────────────
 
 class _MatchCard extends StatelessWidget {
   final MatchModel match;
@@ -295,23 +271,6 @@ class _MatchCard extends StatelessWidget {
 
   String _formatDate(DateTime dt) {
     return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}  ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-  }
-}
-
-// ── Aba Ranking ───────────────────────────────────────────────────────────────
-
-class _RankingTab extends StatelessWidget {
-  final PoolModel pool;
-  const _RankingTab({required this.pool});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Ranking disponível na Fase 3',
-        style: GoogleFonts.dmSans(color: AppColors.mutedDark),
-      ),
-    );
   }
 }
 

@@ -10,6 +10,9 @@ import { usersRoutes } from './modules/users/users.routes.js';
 import { competitionsRoutes } from './modules/competitions/competitions.routes.js';
 import { matchesRoutes } from './modules/matches/matches.routes.js';
 import { poolsRoutes } from './modules/pools/pools.routes.js';
+import { predictionsRoutes } from './modules/predictions/predictions.routes.js';
+import { rankingsRoutes } from './modules/rankings/rankings.routes.js';
+import { syncRoutes } from './modules/sync/sync.routes.js';
 import { getRedis, closeRedis } from './config/redis.js';
 
 declare module 'fastify' {
@@ -62,6 +65,9 @@ export async function buildApp() {
   await fastify.register(competitionsRoutes, { prefix: '/api' });
   await fastify.register(matchesRoutes, { prefix: '/api' });
   await fastify.register(poolsRoutes, { prefix: '/api' });
+  await fastify.register(predictionsRoutes, { prefix: '/api' });
+  await fastify.register(rankingsRoutes, { prefix: '/api' });
+  await fastify.register(syncRoutes, { prefix: '/api' });
 
   // Health check
   fastify.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));
