@@ -1,0 +1,197 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AuthProvider {
+  email
+  google
+  apple
+}
+
+enum CompetitionType {
+  league
+  cup
+  international
+}
+
+enum MatchStatus {
+  scheduled
+  live
+  finished
+  postponed
+  cancelled
+}
+
+enum PoolStatus {
+  open
+  closed
+  finished
+}
+
+enum PointReason {
+  exact_score
+  correct_result
+  no_points
+}
+
+model User {
+  id           String       @id @default(uuid())
+  name         String
+  email        String       @unique
+  passwordHash String?      @map("password_hash")
+  avatarUrl    String?      @map("avatar_url")
+  provider     AuthProvider @default(email)
+  providerId   String?      @map("provider_id")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  refreshTokens RefreshToken[]
+  ownedPools    Pool[]         @relation("PoolOwner")
+  poolMembers   PoolMember[]
+  predictions   Prediction[]
+  pointEvents   PointEvent[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model Competition {
+  id         String          @id @default(uuid())
+  externalId String          @unique @map("external_id")
+  name       String
+  country    String?
+  logoUrl    String?         @map("logo_url")
+  season     String?
+  type       CompetitionType @default(league)
+  isActive   Boolean         @default(true) @map("is_active")
+  syncedAt   DateTime?       @map("synced_at")
+
+  matches Match[]
+  pools   Pool[]
+
+  @@map("competitions")
+}
+
+model Match {
+  id            String      @id @default(uuid())
+  externalId    String      @unique @map("external_id")
+  competitionId String      @map("competition_id")
+  homeTeam      Json        @map("home_team")
+  awayTeam      Json        @map("away_team")
+  scheduledAt   DateTime    @map("scheduled_at")
+  status        MatchStatus @default(scheduled)
+  homeScore     Int?        @map("home_score")
+  awayScore     Int?        @map("away_score")
+  minute        Int?
+  period        String?
+  syncedAt      DateTime?   @map("synced_at")
+
+  competition Competition  @relation(fields: [competitionId], references: [id])
+  poolMatches PoolMatch[]
+  predictions Prediction[]
+  pointEvents PointEvent[]
+
+  @@map("matches")
+}
+
+model Pool {
+  id            String     @id @default(uuid())
+  name          String
+  description   String?
+  ownerId       String     @map("owner_id")
+  competitionId String     @map("competition_id")
+  inviteCode    String     @unique @map("invite_code")
+  inviteUrl     String?    @map("invite_url")
+  scoringExact  Int        @default(3) @map("scoring_exact")
+  scoringResult Int        @default(1) @map("scoring_result")
+  isPublic      Boolean    @default(false) @map("is_public")
+  status        PoolStatus @default(open)
+  createdAt     DateTime   @default(now()) @map("created_at")
+
+  owner       User         @relation("PoolOwner", fields: [ownerId], references: [id])
+  competition Competition  @relation(fields: [competitionId], references: [id])
+  poolMatches PoolMatch[]
+  members     PoolMember[]
+  predictions Prediction[]
+  pointEvents PointEvent[]
+
+  @@map("pools")
+}
+
+model PoolMatch {
+  id      String   @id @default(uuid())
+  poolId  String   @map("pool_id")
+  matchId String   @map("match_id")
+  addedAt DateTime @default(now()) @map("added_at")
+
+  pool  Pool  @relation(fields: [poolId], references: [id], onDelete: Cascade)
+  match Match @relation(fields: [matchId], references: [id])
+
+  @@unique([poolId, matchId])
+  @@map("pool_matches")
+}
+
+model PoolMember {
+  id          String   @id @default(uuid())
+  poolId      String   @map("pool_id")
+  userId      String   @map("user_id")
+  joinedAt    DateTime @default(now()) @map("joined_at")
+  totalPoints Int      @default(0) @map("total_points")
+
+  pool Pool @relation(fields: [poolId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([poolId, userId])
+  @@map("pool_members")
+}
+
+model Prediction {
+  id           String   @id @default(uuid())
+  poolId       String   @map("pool_id")
+  matchId      String   @map("match_id")
+  userId       String   @map("user_id")
+  homeScore    Int      @map("home_score")
+  awayScore    Int      @map("away_score")
+  pointsEarned Int      @default(0) @map("points_earned")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  pool  Pool  @relation(fields: [poolId], references: [id], onDelete: Cascade)
+  match Match @relation(fields: [matchId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([poolId, matchId, userId])
+  @@map("predictions")
+}
+
+model PointEvent {
+  id          String      @id @default(uuid())
+  poolId      String      @map("pool_id")
+  matchId     String      @map("match_id")
+  userId      String      @map("user_id")
+  points      Int
+  reason      PointReason
+  processedAt DateTime    @default(now()) @map("processed_at")
+
+  pool  Pool  @relation(fields: [poolId], references: [id])
+  match Match @relation(fields: [matchId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@map("point_events")
+}

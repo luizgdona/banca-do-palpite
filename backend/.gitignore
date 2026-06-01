@@ -1,0 +1,25 @@
+# Segredos — NUNCA commitar
+.env
+.env.local
+.env.*.local
+
+# Dependências
+node_modules/
+
+# Build
+dist/
+build/
+
+# Logs
+*.log
+logs/
+
+# Prisma — cliente gerado (regenerado via prisma generate)
+# NÃO ignorar: prisma/migrations/, prisma/schema.prisma
+
+# Coverage
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db
