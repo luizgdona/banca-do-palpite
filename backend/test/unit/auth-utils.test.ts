@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { generateAccessToken, generateRefreshToken, hashToken } from '../src/shared/utils/tokens.js';
+import { generateAccessToken, generateRefreshToken, hashToken } from '../../src/shared/utils/tokens.js';
 
 // Mock env before importing tokens
-vi.mock('../src/config/env.js', () => ({
+vi.mock('../../src/config/env.js', () => ({
   env: {
     JWT_SECRET: 'test-secret-key-32-chars-minimum!!',
     JWT_EXPIRES_IN: '15m',

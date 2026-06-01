@@ -158,6 +158,7 @@ Quando o jogo termina: `calculate-points` executa, pontos são creditados, ranki
 - [x] **Fase 3** — Palpites e Ranking: predictions com validação temporal server-side, calculate-points atômico e idempotente, ranking com tiebreaker, telas Flutter inline com debounce
 - [x] **Fase 4** — Tempo Real: WebSocket autenticado, Redis pub/sub, BullMQ live-scores job, reconexão exponential backoff no Flutter
 - [x] **Fase 5** — Polimento: push notifications Firebase (lazy init), OAuth Google, deep links, perfil, configurações de notificação, PWA manifest, 28 testes unitários
+- [x] **Cobertura de testes TDD** — 102 testes backend (12 arquivos: unit + integration) + 50 testes Flutter (models, websocket, widgets) = 152 testes, 0 falhas
 
 ---
 
