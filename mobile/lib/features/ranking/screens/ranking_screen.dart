@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/models/ranking_model.dart';
 import '../../../core/providers/predictions_provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/app_avatar.dart';
+import '../../../core/widgets/app_loading.dart';
 
 class RankingScreen extends ConsumerWidget {
   final String poolId;
@@ -14,9 +17,7 @@ class RankingScreen extends ConsumerWidget {
     final rankingAsync = ref.watch(rankingProvider(poolId));
 
     return rankingAsync.when(
-      loading: () => const Center(
-        child: CircularProgressIndicator(color: AppColors.amber),
-      ),
+      loading: () => const AppLoadingIndicator(),
       error: (e, _) => Center(child: Text(e.toString())),
       data: (raw) {
         final entries = raw
@@ -27,23 +28,22 @@ class RankingScreen extends ConsumerWidget {
           return Center(
             child: Text(
               'Nenhum ponto marcado ainda.',
-              style: GoogleFonts.dmSans(color: AppColors.mutedDark),
+              style: AppTextStyles.bodySm,
             ),
           );
         }
 
-        // Find "me" entry to always show at bottom if off-screen
         final myEntry = entries.where((e) => e.isMe).firstOrNull;
 
         return Stack(
           children: [
             ListView.builder(
               padding: EdgeInsets.fromLTRB(
-                  16, 16, 16, myEntry != null ? 80 : 16),
+                  AppSpacing.base, AppSpacing.base, AppSpacing.base,
+                  myEntry != null ? 80 : AppSpacing.base),
               itemCount: entries.length,
               itemBuilder: (ctx, i) => _RankingRow(entry: entries[i]),
             ),
-            // Sticky "my position" card when I'm off screen
             if (myEntry != null && myEntry.position > 5)
               Positioned(
                 bottom: 0,
@@ -51,7 +51,8 @@ class RankingScreen extends ConsumerWidget {
                 right: 0,
                 child: Container(
                   color: AppColors.cream,
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.base, AppSpacing.sm, AppSpacing.base, AppSpacing.base),
                   child: _RankingRow(entry: myEntry, sticky: true),
                 ),
               ),
@@ -68,17 +69,17 @@ class _RankingRow extends StatelessWidget {
 
   const _RankingRow({required this.entry, this.sticky = false});
 
+  static const _medalColors = [
+    AppColors.exactColor,
+    AppColors.silverMedal,
+    AppColors.bronzeMedal,
+  ];
+
   @override
   Widget build(BuildContext context) {
     final isTop3 = entry.position <= 3;
-    final positionColors = [
-      AppColors.exactColor,   // 1°
-      const Color(0xFFB0B0B0), // 2° prata
-      const Color(0xFFCD7F32), // 3° bronze
-    ];
-
     final posColor = isTop3
-        ? positionColors[entry.position - 1]
+        ? _medalColors[entry.position - 1]
         : AppColors.mutedDark;
 
     final bgColor = entry.isMe
@@ -89,10 +90,11 @@ class _RankingRow extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
       decoration: BoxDecoration(
         color: sticky ? AppColors.inputFill : bgColor,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: AppSpacing.inputRadius,
         border: entry.isMe
             ? Border.all(color: AppColors.amber.withAlpha(100), width: 1.5)
             : sticky
@@ -101,72 +103,43 @@ class _RankingRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Position
           SizedBox(
             width: 40,
             child: Text(
               '${entry.position}°',
-              style: GoogleFonts.barlowCondensed(
-                fontSize: isTop3 ? 26 : 20,
-                fontWeight: FontWeight.w900,
-                color: posColor,
-              ),
+              style: (isTop3 ? AppTextStyles.rankPositionTop : AppTextStyles.rankPosition)
+                  .copyWith(color: posColor),
             ),
           ),
-          // Avatar
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: AppColors.green,
-            child: Text(
-              entry.user.name[0].toUpperCase(),
-              style: GoogleFonts.barlowCondensed(
-                fontWeight: FontWeight.w800,
-                color: AppColors.amber,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          // Name
+          AppAvatar(name: entry.user.name),
+          AppSpacing.gapMdH,
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   entry.user.name,
-                  style: GoogleFonts.dmSans(
+                  style: AppTextStyles.bodyMd.copyWith(
                     fontWeight:
                         entry.isMe ? FontWeight.w700 : FontWeight.w500,
-                    color: AppColors.darkText,
                   ),
                 ),
                 if (entry.exactCount > 0)
                   Text(
                     '${entry.exactCount} placares exatos 🎯',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 11,
-                      color: AppColors.mutedDark,
-                    ),
+                    style: AppTextStyles.micro,
                   ),
               ],
             ),
           ),
-          // Points
           Text(
             '${entry.totalPoints}',
-            style: GoogleFonts.barlowCondensed(
-              fontSize: 28,
-              fontWeight: FontWeight.w900,
+            style: AppTextStyles.rankPoints.copyWith(
               color: entry.isMe ? AppColors.amber : AppColors.darkText,
             ),
           ),
-          const SizedBox(width: 4),
-          Text(
-            'pts',
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
-              color: AppColors.mutedDark,
-            ),
-          ),
+          AppSpacing.gapXs,
+          Text('pts', style: AppTextStyles.caption),
         ],
       ),
     );

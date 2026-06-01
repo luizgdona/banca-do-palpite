@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/models/match_model.dart';
 import '../../../core/models/pool_model.dart';
 import '../../../core/providers/predictions_provider.dart';
 import '../../../core/providers/realtime_provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/app_avatar.dart';
+import '../../../core/widgets/app_live_badge.dart';
+import '../../../core/widgets/app_loading.dart';
 
 class LiveMatchScreen extends ConsumerWidget {
   final PoolModel pool;
@@ -15,7 +19,6 @@ class LiveMatchScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Prefer live data from WS provider — updates in real time
     final liveMap = ref.watch(liveMatchesProvider).valueOrNull ?? {};
     final match = liveMap[matchId] ??
         pool.poolMatches
@@ -51,20 +54,18 @@ class LiveMatchScreen extends ConsumerWidget {
       ),
       body: Column(
         children: [
-          // Scoreboard
           _ScoreBoard(match: match),
-          const SizedBox(height: 8),
-          // Predictions list
+          AppSpacing.gapSm,
           Expanded(
             child: Container(
               decoration: const BoxDecoration(
                 color: AppColors.cream,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(AppSpacing.radiusXl),
+                ),
               ),
               child: predictionsAsync.when(
-                loading: () => const Center(
-                  child: CircularProgressIndicator(color: AppColors.amber),
-                ),
+                loading: () => const AppLoadingIndicator(),
                 error: (e, _) => Center(child: Text(e.toString())),
                 data: (data) => _PredictionsList(
                   data: data,
@@ -89,26 +90,14 @@ class _ScoreBoard extends StatelessWidget {
     final isLive = match.status == MatchStatus.live;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
       child: Column(
         children: [
           if (isLive)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: AppColors.liveBadge,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                '● AO VIVO${match.minute != null ? "  ${match.minute}'" : ""}',
-                style: GoogleFonts.barlowCondensed(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                  letterSpacing: 1,
-                ),
-              ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.base),
+              child: AppLiveBadge(minute: match.minute),
             ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -117,45 +106,34 @@ class _ScoreBoard extends StatelessWidget {
                 child: Text(
                   match.homeTeam.name,
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.barlowCondensed(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
+                  style: AppTextStyles.sectionTitle.copyWith(
                     color: AppColors.offWhite,
                   ),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: AppSpacing.base),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       '${match.homeScore ?? 0}',
-                      style: GoogleFonts.barlowCondensed(
-                        fontSize: 64,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.amber,
-                        height: 1,
-                      ),
+                      style: AppTextStyles.scoreXl,
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm),
                       child: Text(
                         '×',
-                        style: GoogleFonts.barlowCondensed(
-                          fontSize: 32,
+                        style: AppTextStyles.scoreLg.copyWith(
                           color: AppColors.mutedText,
                         ),
                       ),
                     ),
                     Text(
                       '${match.awayScore ?? 0}',
-                      style: GoogleFonts.barlowCondensed(
-                        fontSize: 64,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.amber,
-                        height: 1,
-                      ),
+                      style: AppTextStyles.scoreXl,
                     ),
                   ],
                 ),
@@ -164,9 +142,7 @@ class _ScoreBoard extends StatelessWidget {
                 child: Text(
                   match.awayTeam.name,
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.barlowCondensed(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
+                  style: AppTextStyles.sectionTitle.copyWith(
                     color: AppColors.offWhite,
                   ),
                 ),
@@ -201,31 +177,25 @@ class _PredictionsList extends StatelessWidget {
       slivers: [
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+            padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.md),
             child: Row(
               children: [
                 Text(
                   'PALPITES',
-                  style: GoogleFonts.barlowCondensed(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.darkText,
-                  ),
+                  style: AppTextStyles.sectionTitle.copyWith(fontSize: 20),
                 ),
                 const Spacer(),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm + 2, vertical: AppSpacing.xs),
                   decoration: BoxDecoration(
                     color: AppColors.green.withAlpha(20),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: AppSpacing.chipRadius,
                   ),
                   child: Text(
                     '$predictedCount de $totalMembers apostaram',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 12,
-                      color: AppColors.mutedDark,
-                    ),
+                    style: AppTextStyles.caption,
                   ),
                 ),
               ],
@@ -240,11 +210,11 @@ class _PredictionsList extends StatelessWidget {
                 children: [
                   const Icon(Icons.lock_clock,
                       size: 40, color: AppColors.mutedDark),
-                  const SizedBox(height: 12),
+                  AppSpacing.gapMd,
                   Text(
                     'Palpites revelados\nquando o jogo começar',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.dmSans(color: AppColors.mutedDark),
+                    style: AppTextStyles.bodySm,
                   ),
                 ],
               ),
@@ -252,14 +222,15 @@ class _PredictionsList extends StatelessWidget {
           )
         else
           SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: AppSpacing.pagePadding,
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
                 (ctx, i) {
                   final p = predictions[i] as dynamic;
                   final pts = p.pointsEarned as int;
                   final isExact = pts >= pool.scoringExact;
-                  final isCorrect = pts >= pool.scoringResult && pts < pool.scoringExact;
+                  final isCorrect =
+                      pts >= pool.scoringResult && pts < pool.scoringExact;
 
                   Color cardColor;
                   Color badgeColor;
@@ -280,65 +251,50 @@ class _PredictionsList extends StatelessWidget {
                   } else {
                     cardColor = AppColors.inputFill;
                     badgeColor = AppColors.mutedDark;
-                    badge =
-                        '${p.homeScore} × ${p.awayScore}';
+                    badge = '${p.homeScore} × ${p.awayScore}';
                   }
 
                   return Container(
-                    margin: const EdgeInsets.only(bottom: 8),
+                    margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 10),
+                        horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
                     decoration: BoxDecoration(
                       color: cardColor,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: AppSpacing.inputRadius,
                       border: Border.all(
                           color: badgeColor.withAlpha(80), width: 1),
                     ),
                     child: Row(
                       children: [
-                        CircleAvatar(
-                          radius: 18,
-                          backgroundColor: AppColors.green,
-                          child: Text(
-                            (p.user.name as String)[0].toUpperCase(),
-                            style: GoogleFonts.barlowCondensed(
-                              color: AppColors.amber,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
+                        AppAvatar(name: p.user.name as String),
+                        AppSpacing.gapMdH,
                         Expanded(
                           child: Text(
                             p.user.name as String,
-                            style: GoogleFonts.dmSans(
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.darkText,
-                            ),
+                            style: AppTextStyles.memberName,
                           ),
                         ),
                         Text(
                           '${p.homeScore} × ${p.awayScore}',
-                          style: GoogleFonts.barlowCondensed(
+                          style: AppTextStyles.teamName.copyWith(
                             fontSize: 18,
-                            fontWeight: FontWeight.w800,
                             color: AppColors.darkText,
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        AppSpacing.gapSmH,
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
+                              horizontal: AppSpacing.sm,
+                              vertical: AppSpacing.xs / 2),
                           decoration: BoxDecoration(
                             color: badgeColor.withAlpha(30),
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: AppSpacing.badgeRadius,
                             border: Border.all(color: badgeColor),
                           ),
                           child: Text(
                             badge,
-                            style: GoogleFonts.barlowCondensed(
+                            style: AppTextStyles.tabLabel.copyWith(
                               fontSize: 13,
-                              fontWeight: FontWeight.w800,
                               color: badgeColor,
                             ),
                           ),

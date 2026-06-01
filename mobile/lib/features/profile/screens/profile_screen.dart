@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/app_avatar.dart';
+import '../../../core/widgets/app_loading.dart';
 import 'notification_settings_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -22,7 +25,7 @@ class ProfileScreen extends ConsumerWidget {
         title: const Text('PERFIL'),
       ),
       body: user == null
-          ? const Center(child: CircularProgressIndicator(color: AppColors.amber))
+          ? const AppLoadingIndicator()
           : ListView(
               children: [
                 _ProfileHeader(user: user),
@@ -48,18 +51,14 @@ class ProfileScreen extends ConsumerWidget {
                   color: AppColors.liveBadge,
                   onTap: () => _confirmLogout(context, ref),
                 ),
-                const SizedBox(height: 32),
+                AppSpacing.gapXxl,
                 Center(
                   child: Text(
                     'Banca do Palpite',
-                    style: GoogleFonts.barlowCondensed(
-                      fontSize: 14,
-                      color: AppColors.mutedDark,
-                      letterSpacing: 1,
-                    ),
+                    style: AppTextStyles.caption.copyWith(letterSpacing: 1),
                   ),
                 ),
-                const SizedBox(height: 8),
+                AppSpacing.gapSm,
               ],
             ),
     );
@@ -77,22 +76,23 @@ class ProfileScreen extends ConsumerWidget {
         backgroundColor: AppColors.green,
         title: Text(
           'EDITAR PERFIL',
-          style: GoogleFonts.barlowCondensed(
+          style: AppTextStyles.sectionTitle.copyWith(
             fontSize: 20,
-            fontWeight: FontWeight.w800,
             color: AppColors.amber,
           ),
         ),
         content: TextField(
           controller: nameCtrl,
-          style: GoogleFonts.dmSans(color: AppColors.offWhite),
+          style: AppTextStyles.bodyMd.copyWith(color: AppColors.offWhite),
           decoration: InputDecoration(
             labelText: 'Nome',
             filled: true,
             fillColor: AppColors.greenMid,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+            border: const OutlineInputBorder(
+              borderRadius: AppSpacing.inputRadius,
+            ),
+            enabledBorder: const OutlineInputBorder(
+              borderRadius: AppSpacing.inputRadius,
               borderSide: BorderSide.none,
             ),
           ),
@@ -100,8 +100,7 @@ class ProfileScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('CANCELAR',
-                style: GoogleFonts.dmSans(color: AppColors.mutedText)),
+            child: Text('CANCELAR', style: AppTextStyles.caption),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, nameCtrl.text.trim()),
@@ -117,7 +116,6 @@ class ProfileScreen extends ConsumerWidget {
     try {
       final client = ref.read(apiClientProvider);
       await client.dio.put('/users/me', data: {'name': result});
-      // Refresh auth state
       await ref.read(authProvider.notifier).login(
             email: user.email,
             password: '',
@@ -132,21 +130,19 @@ class ProfileScreen extends ConsumerWidget {
         backgroundColor: AppColors.green,
         title: Text(
           'SAIR',
-          style: GoogleFonts.barlowCondensed(
+          style: AppTextStyles.sectionTitle.copyWith(
             fontSize: 20,
-            fontWeight: FontWeight.w800,
             color: AppColors.liveBadge,
           ),
         ),
         content: Text(
           'Tem certeza que deseja sair?',
-          style: GoogleFonts.dmSans(color: AppColors.offWhite),
+          style: AppTextStyles.bodyMd.copyWith(color: AppColors.offWhite),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('CANCELAR',
-                style: GoogleFonts.dmSans(color: AppColors.mutedText)),
+            child: Text('CANCELAR', style: AppTextStyles.caption),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -171,59 +167,45 @@ class _ProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: AppColors.green,
-      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+      padding: const EdgeInsets.symmetric(
+          vertical: AppSpacing.xxl, horizontal: AppSpacing.xl),
       child: Row(
         children: [
-          CircleAvatar(
+          AppAvatar(
+            name: user.name,
             radius: 36,
             backgroundColor: AppColors.amber,
-            child: Text(
-              user.name[0].toUpperCase(),
-              style: GoogleFonts.barlowCondensed(
-                fontSize: 36,
-                fontWeight: FontWeight.w900,
-                color: AppColors.green,
-              ),
-            ),
+            textColor: AppColors.green,
           ),
-          const SizedBox(width: 20),
+          AppSpacing.gapLg,
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   user.name,
-                  style: GoogleFonts.barlowCondensed(
+                  style: AppTextStyles.screenTitle.copyWith(
                     fontSize: 26,
-                    fontWeight: FontWeight.w800,
                     color: AppColors.offWhite,
                   ),
                 ),
-                Text(
-                  user.email,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
-                    color: AppColors.mutedText,
-                  ),
-                ),
+                Text(user.email, style: AppTextStyles.bodySm),
                 if (user.provider != 'email')
                   Padding(
-                    padding: const EdgeInsets.only(top: 4),
+                    padding: const EdgeInsets.only(top: AppSpacing.xs),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
+                          horizontal: AppSpacing.sm, vertical: AppSpacing.xs / 2),
                       decoration: BoxDecoration(
                         color: AppColors.amber.withAlpha(30),
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: AppSpacing.badgeRadius,
                         border: Border.all(
                             color: AppColors.amber.withAlpha(80)),
                       ),
                       child: Text(
                         user.provider.toUpperCase(),
-                        style: GoogleFonts.barlowCondensed(
-                          fontSize: 11,
+                        style: AppTextStyles.badgeLabel.copyWith(
                           color: AppColors.amber,
-                          letterSpacing: 1,
                         ),
                       ),
                     ),
@@ -257,12 +239,12 @@ class _SettingsTile extends StatelessWidget {
       leading: Icon(icon, color: c),
       title: Text(
         label,
-        style: GoogleFonts.dmSans(
+        style: AppTextStyles.bodyMd.copyWith(
           fontWeight: FontWeight.w500,
           color: c,
         ),
       ),
-      trailing: Icon(Icons.chevron_right, color: AppColors.mutedDark),
+      trailing: const Icon(Icons.chevron_right, color: AppColors.mutedDark),
       onTap: onTap,
     );
   }

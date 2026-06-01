@@ -25,6 +25,14 @@ class AppColors {
   static const mutedText = Color(0xFF7A9A7A);
   static const mutedDark = Color(0xFF8A8A7A);
 
+  // Ranking medals
+  static const silverMedal = Color(0xFFB0B0B0);
+  static const bronzeMedal = Color(0xFFCD7F32);
+
+  // Shadows
+  static const cardShadow = Color(0x20000000);
+  static const shadowDark = Color(0x40000000);
+
   // Extras
   static const inputFill = Color(0xFFEDE4CC);
   static const divider = Color(0xFFD4C9A8);

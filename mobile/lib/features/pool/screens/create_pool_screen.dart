@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/models/competition_model.dart';
 import '../../../core/models/match_model.dart';
 import '../../../core/providers/competitions_provider.dart';
 import '../../../core/providers/pools_provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/app_text_styles.dart';
 import '../../competitions/screens/search_competitions_screen.dart';
 
 class CreatePoolScreen extends ConsumerStatefulWidget {
@@ -50,12 +51,14 @@ class _CreatePoolScreenState extends ConsumerState<CreatePoolScreen> {
 
   Future<void> _loadMatches(String competitionId) async {
     try {
-      final matches = await ref.read(competitionMatchesProvider(competitionId).future);
+      final matches =
+          await ref.read(competitionMatchesProvider(competitionId).future);
       if (!mounted) return;
       setState(() {
         _allMatches = matches
             .where((m) =>
-                m.status == MatchStatus.scheduled && m.scheduledAt.isAfter(DateTime.now()))
+                m.status == MatchStatus.scheduled &&
+                m.scheduledAt.isAfter(DateTime.now()))
             .toList();
       });
     } catch (_) {}
@@ -70,7 +73,9 @@ class _CreatePoolScreenState extends ConsumerState<CreatePoolScreen> {
     try {
       final pool = await ref.read(poolsProvider.notifier).create(
             name: _nameCtrl.text.trim(),
-            description: _descCtrl.text.trim().isNotEmpty ? _descCtrl.text.trim() : null,
+            description: _descCtrl.text.trim().isNotEmpty
+                ? _descCtrl.text.trim()
+                : null,
             competitionId: _competition!.id,
             matchIds: _selectedMatchIds.toList(),
             scoringExact: _scoringExact,
@@ -80,9 +85,8 @@ class _CreatePoolScreenState extends ConsumerState<CreatePoolScreen> {
       context.go('/pool/${pool.id}');
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -97,7 +101,8 @@ class _CreatePoolScreenState extends ConsumerState<CreatePoolScreen> {
         title: const Text('CRIAR BOLÃO'),
         leading: BackButton(
           color: AppColors.offWhite,
-          onPressed: () => _step == 0 ? context.pop() : setState(() => _step--),
+          onPressed: () =>
+              _step == 0 ? context.pop() : setState(() => _step--),
         ),
       ),
       body: Column(
@@ -109,7 +114,8 @@ class _CreatePoolScreenState extends ConsumerState<CreatePoolScreen> {
                 nameCtrl: _nameCtrl,
                 descCtrl: _descCtrl,
                 onNext: () {
-                  if (_nameCtrl.text.trim().length >= 3) setState(() => _step = 1);
+                  if (_nameCtrl.text.trim().length >= 3)
+                    setState(() => _step = 1);
                 },
               ),
               _StepCompetition(
@@ -161,7 +167,8 @@ class _StepperBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: AppColors.green,
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.fromLTRB(
+          AppSpacing.base, 0, AppSpacing.base, AppSpacing.base),
       child: Row(
         children: List.generate(total, (i) {
           final done = i < current;
@@ -202,25 +209,19 @@ class _StepName extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: AppSpacing.sheetPadding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Como vai se chamar o bolão?',
-            style: GoogleFonts.barlowCondensed(
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-              color: AppColors.darkText,
-            ),
-          ),
-          const SizedBox(height: 24),
+          Text('Como vai se chamar o bolão?',
+              style: AppTextStyles.screenTitle.copyWith(fontSize: 26)),
+          AppSpacing.gapXl,
           TextField(
             controller: nameCtrl,
             textCapitalization: TextCapitalization.words,
             decoration: const InputDecoration(labelText: 'Nome do bolão'),
           ),
-          const SizedBox(height: 16),
+          AppSpacing.gapBase,
           TextField(
             controller: descCtrl,
             maxLines: 3,
@@ -229,7 +230,7 @@ class _StepName extends StatelessWidget {
               alignLabelWithHint: true,
             ),
           ),
-          const SizedBox(height: 32),
+          AppSpacing.gapXxl,
           ElevatedButton(
             onPressed: onNext,
             child: const Text('PRÓXIMO: COMPETIÇÃO'),
@@ -256,28 +257,23 @@ class _StepCompetition extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: AppSpacing.sheetPadding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Qual competição?',
-            style: GoogleFonts.barlowCondensed(
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-              color: AppColors.darkText,
-            ),
-          ),
-          const SizedBox(height: 24),
+          Text('Qual competição?',
+              style: AppTextStyles.screenTitle.copyWith(fontSize: 26)),
+          AppSpacing.gapXl,
           GestureDetector(
             onTap: onPick,
             child: Container(
-              padding: const EdgeInsets.all(16),
+              padding: AppSpacing.cardPadding,
               decoration: BoxDecoration(
                 color: selected != null ? AppColors.green : AppColors.inputFill,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppSpacing.cardRadius,
                 border: Border.all(
-                  color: selected != null ? AppColors.amber : AppColors.divider,
+                  color:
+                      selected != null ? AppColors.amber : AppColors.divider,
                   width: 1.5,
                 ),
               ),
@@ -285,11 +281,9 @@ class _StepCompetition extends StatelessWidget {
                   ? Row(
                       children: [
                         const Icon(Icons.search, color: AppColors.mutedDark),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Buscar competição...',
-                          style: GoogleFonts.dmSans(color: AppColors.mutedDark),
-                        ),
+                        AppSpacing.gapMdH,
+                        Text('Buscar competição...',
+                            style: AppTextStyles.bodySm),
                       ],
                     )
                   : Row(
@@ -305,31 +299,24 @@ class _StepCompetition extends StatelessWidget {
                             ),
                           )
                         else
-                          const Icon(Icons.emoji_events_outlined, color: AppColors.amber),
-                        const SizedBox(width: 12),
+                          const Icon(Icons.emoji_events_outlined,
+                              color: AppColors.amber),
+                        AppSpacing.gapMdH,
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                selected!.name,
-                                style: GoogleFonts.barlowCondensed(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.offWhite,
-                                ),
-                              ),
+                              Text(selected!.name,
+                                  style: AppTextStyles.cardTitle),
                               Text(
                                 '${selected!.country ?? ''} • ${selected!.season ?? ''}',
-                                style: GoogleFonts.dmSans(
-                                  fontSize: 12,
-                                  color: AppColors.mutedText,
-                                ),
+                                style: AppTextStyles.caption,
                               ),
                             ],
                           ),
                         ),
-                        const Icon(Icons.edit_outlined, color: AppColors.amberLight, size: 18),
+                        const Icon(Icons.edit_outlined,
+                            color: AppColors.amberLight, size: 18),
                       ],
                     ),
             ),
@@ -366,29 +353,24 @@ class _StepMatches extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+          padding: const EdgeInsets.fromLTRB(
+              AppSpacing.xl, AppSpacing.xl, AppSpacing.xl, AppSpacing.sm),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Selecionar jogos',
-                style: GoogleFonts.barlowCondensed(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.darkText,
-                ),
-              ),
+              Text('Selecionar jogos',
+                  style: AppTextStyles.screenTitle.copyWith(fontSize: 26)),
               if (selected.isNotEmpty)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm + 2, vertical: AppSpacing.xs),
                   decoration: BoxDecoration(
                     color: AppColors.amber,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: AppSpacing.chipRadius,
                   ),
                   child: Text(
                     '${selected.length} selecionados',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 12,
+                    style: AppTextStyles.caption.copyWith(
                       fontWeight: FontWeight.w700,
                       color: AppColors.green,
                     ),
@@ -403,14 +385,14 @@ class _StepMatches extends StatelessWidget {
               child: Text(
                 'Nenhum jogo disponível\npara esta competição.',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.dmSans(color: AppColors.mutedDark),
+                style: AppTextStyles.bodySm,
               ),
             ),
           )
         else
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: AppSpacing.pagePadding,
               itemCount: matches.length,
               itemBuilder: (context, i) {
                 final match = matches[i];
@@ -418,13 +400,17 @@ class _StepMatches extends StatelessWidget {
                 return GestureDetector(
                   onTap: () => onToggle(match.id),
                   child: Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                    padding: const EdgeInsets.all(AppSpacing.md),
                     decoration: BoxDecoration(
-                      color: isSelected ? AppColors.green : AppColors.inputFill,
-                      borderRadius: BorderRadius.circular(10),
+                      color: isSelected
+                          ? AppColors.green
+                          : AppColors.inputFill,
+                      borderRadius: AppSpacing.inputRadius,
                       border: Border.all(
-                        color: isSelected ? AppColors.amber : AppColors.divider,
+                        color: isSelected
+                            ? AppColors.amber
+                            : AppColors.divider,
                         width: 1.5,
                       ),
                     ),
@@ -433,25 +419,31 @@ class _StepMatches extends StatelessWidget {
                         Expanded(
                           child: Text(
                             '${match.homeTeam.name}  ×  ${match.awayTeam.name}',
-                            style: GoogleFonts.barlowCondensed(
+                            style: AppTextStyles.tabLabel.copyWith(
                               fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: isSelected ? AppColors.offWhite : AppColors.darkText,
+                              color: isSelected
+                                  ? AppColors.offWhite
+                                  : AppColors.darkText,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        AppSpacing.gapSmH,
                         Text(
                           _formatDate(match.scheduledAt),
-                          style: GoogleFonts.dmSans(
-                            fontSize: 12,
-                            color: isSelected ? AppColors.mutedText : AppColors.mutedDark,
+                          style: AppTextStyles.caption.copyWith(
+                            color: isSelected
+                                ? AppColors.mutedText
+                                : AppColors.mutedDark,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        AppSpacing.gapSmH,
                         Icon(
-                          isSelected ? Icons.check_circle : Icons.circle_outlined,
-                          color: isSelected ? AppColors.amber : AppColors.mutedDark,
+                          isSelected
+                              ? Icons.check_circle
+                              : Icons.circle_outlined,
+                          color: isSelected
+                              ? AppColors.amber
+                              : AppColors.mutedDark,
                           size: 20,
                         ),
                       ],
@@ -462,7 +454,7 @@ class _StepMatches extends StatelessWidget {
             ),
           ),
         Padding(
-          padding: const EdgeInsets.all(16),
+          padding: AppSpacing.pageVertical,
           child: ElevatedButton(
             onPressed: selected.isNotEmpty ? onNext : null,
             child: const Text('PRÓXIMO: PONTUAÇÃO'),
@@ -505,45 +497,37 @@ class _StepScoring extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: AppSpacing.sheetPadding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Configurar pontuação',
-            style: GoogleFonts.barlowCondensed(
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-              color: AppColors.darkText,
-            ),
-          ),
-          const SizedBox(height: 24),
-          // Resumo
+          Text('Configurar pontuação',
+              style: AppTextStyles.screenTitle.copyWith(fontSize: 26)),
+          AppSpacing.gapXl,
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: AppSpacing.cardPadding,
             decoration: BoxDecoration(
               color: AppColors.green,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppSpacing.cardRadius,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   name,
-                  style: GoogleFonts.barlowCondensed(
+                  style: AppTextStyles.sectionTitle.copyWith(
                     fontSize: 20,
-                    fontWeight: FontWeight.w800,
                     color: AppColors.amber,
                   ),
                 ),
                 Text(
                   '${competition?.name ?? ''} • $matchCount jogos',
-                  style: GoogleFonts.dmSans(fontSize: 13, color: AppColors.mutedText),
+                  style: AppTextStyles.bodySm,
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          AppSpacing.gapXl,
           _ScoringSlider(
             label: 'Placar exato',
             sublabel: 'Ex: apostou 2×1 e foi 2×1',
@@ -553,7 +537,7 @@ class _StepScoring extends StatelessWidget {
             onChanged: onExactChanged,
             color: AppColors.exactColor,
           ),
-          const SizedBox(height: 16),
+          AppSpacing.gapBase,
           _ScoringSlider(
             label: 'Resultado certo',
             sublabel: 'Ex: apostou 2×1 e foi 3×0 (vitória do mesmo time)',
@@ -563,14 +547,15 @@ class _StepScoring extends StatelessWidget {
             onChanged: onResultChanged,
             color: AppColors.winColor,
           ),
-          const SizedBox(height: 32),
+          AppSpacing.gapXxl,
           ElevatedButton(
             onPressed: onConfirm,
             child: isLoading
                 ? const SizedBox(
                     height: 20,
                     width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.green),
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: AppColors.green),
                   )
                 : const Text('CRIAR BOLÃO'),
           ),
@@ -609,31 +594,27 @@ class _ScoringSlider extends StatelessWidget {
           children: [
             Text(
               label,
-              style: GoogleFonts.dmSans(
-                  fontWeight: FontWeight.w700, color: AppColors.darkText),
+              style: AppTextStyles.bodyMd.copyWith(fontWeight: FontWeight.w700),
             ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md, vertical: AppSpacing.xs),
               decoration: BoxDecoration(
                 color: color.withAlpha(30),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: AppSpacing.chipRadius,
                 border: Border.all(color: color, width: 1),
               ),
               child: Text(
                 '+$value pts',
-                style: GoogleFonts.barlowCondensed(
-                  fontWeight: FontWeight.w800,
-                  color: color,
+                style: AppTextStyles.tabLabel.copyWith(
                   fontSize: 16,
+                  color: color,
                 ),
               ),
             ),
           ],
         ),
-        Text(
-          sublabel,
-          style: GoogleFonts.dmSans(fontSize: 12, color: AppColors.mutedDark),
-        ),
+        Text(sublabel, style: AppTextStyles.caption),
         Slider(
           value: value.toDouble(),
           min: min.toDouble(),

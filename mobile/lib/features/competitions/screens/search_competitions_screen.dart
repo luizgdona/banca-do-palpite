@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/models/competition_model.dart';
 import '../../../core/providers/competitions_provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/app_loading.dart';
 
 class SearchCompetitionsScreen extends ConsumerStatefulWidget {
   const SearchCompetitionsScreen({super.key});
 
   @override
-  ConsumerState<SearchCompetitionsScreen> createState() => _SearchCompetitionsScreenState();
+  ConsumerState<SearchCompetitionsScreen> createState() =>
+      _SearchCompetitionsScreenState();
 }
 
-class _SearchCompetitionsScreenState extends ConsumerState<SearchCompetitionsScreen> {
+class _SearchCompetitionsScreenState
+    extends ConsumerState<SearchCompetitionsScreen> {
   final _searchCtrl = TextEditingController();
   String _query = '';
 
@@ -25,7 +29,8 @@ class _SearchCompetitionsScreenState extends ConsumerState<SearchCompetitionsScr
 
   @override
   Widget build(BuildContext context) {
-    final competitionsAsync = ref.watch(competitionsProvider(_query.isEmpty ? null : _query));
+    final competitionsAsync =
+        ref.watch(competitionsProvider(_query.isEmpty ? null : _query));
 
     return Scaffold(
       backgroundColor: AppColors.cream,
@@ -37,27 +42,30 @@ class _SearchCompetitionsScreenState extends ConsumerState<SearchCompetitionsScr
         children: [
           Container(
             color: AppColors.green,
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            padding: const EdgeInsets.fromLTRB(
+                AppSpacing.base, 0, AppSpacing.base, AppSpacing.base),
             child: TextField(
               controller: _searchCtrl,
-              style: GoogleFonts.dmSans(color: AppColors.offWhite),
+              style: AppTextStyles.bodyMd.copyWith(color: AppColors.offWhite),
               decoration: InputDecoration(
                 hintText: 'Buscar competição...',
-                hintStyle: GoogleFonts.dmSans(color: AppColors.mutedText),
-                prefixIcon: const Icon(Icons.search, color: AppColors.mutedText),
+                hintStyle:
+                    AppTextStyles.bodyMd.copyWith(color: AppColors.mutedText),
+                prefixIcon:
+                    const Icon(Icons.search, color: AppColors.mutedText),
                 filled: true,
                 fillColor: AppColors.greenMid,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                border: const OutlineInputBorder(
+                  borderRadius: AppSpacing.inputRadius,
                   borderSide: BorderSide.none,
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                enabledBorder: const OutlineInputBorder(
+                  borderRadius: AppSpacing.inputRadius,
                   borderSide: BorderSide.none,
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: AppColors.amber, width: 2),
+                focusedBorder: const OutlineInputBorder(
+                  borderRadius: AppSpacing.inputRadius,
+                  borderSide: BorderSide(color: AppColors.amber, width: 2),
                 ),
               ),
               onChanged: (v) {
@@ -71,22 +79,18 @@ class _SearchCompetitionsScreenState extends ConsumerState<SearchCompetitionsScr
           ),
           Expanded(
             child: competitionsAsync.when(
-              loading: () => const Center(
-                child: CircularProgressIndicator(color: AppColors.amber),
-              ),
+              loading: () => const AppLoadingIndicator(),
               error: (e, _) => Center(
                 child: Text('Erro ao carregar competições',
-                    style: GoogleFonts.dmSans(color: AppColors.darkText)),
+                    style: AppTextStyles.bodyMd),
               ),
               data: (competitions) => competitions.isEmpty
                   ? Center(
-                      child: Text(
-                        'Nenhuma competição encontrada',
-                        style: GoogleFonts.dmSans(color: AppColors.mutedDark),
-                      ),
+                      child: Text('Nenhuma competição encontrada',
+                          style: AppTextStyles.bodySm),
                     )
                   : ListView.builder(
-                      padding: const EdgeInsets.all(16),
+                      padding: AppSpacing.pageVertical,
                       itemCount: competitions.length,
                       itemBuilder: (context, i) =>
                           _CompetitionTile(competition: competitions[i]),
@@ -107,7 +111,7 @@ class _CompetitionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       color: AppColors.green,
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: ListTile(
         onTap: () => Navigator.of(context).pop(competition),
         leading: competition.logoUrl != null
@@ -121,17 +125,10 @@ class _CompetitionTile extends StatelessWidget {
                 ),
               )
             : const Icon(Icons.emoji_events_outlined, color: AppColors.amber),
-        title: Text(
-          competition.name,
-          style: GoogleFonts.barlowCondensed(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: AppColors.offWhite,
-          ),
-        ),
+        title: Text(competition.name, style: AppTextStyles.cardTitle),
         subtitle: Text(
           '${competition.country ?? ''} • ${competition.season ?? ''}',
-          style: GoogleFonts.dmSans(fontSize: 12, color: AppColors.mutedText),
+          style: AppTextStyles.caption,
         ),
         trailing: const Icon(Icons.chevron_right, color: AppColors.mutedText),
       ),

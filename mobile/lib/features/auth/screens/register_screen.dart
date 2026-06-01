@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/bdp_logo.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -41,9 +42,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (state?.status == AuthStatus.authenticated) {
       context.go('/home');
     } else if (state?.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state!.error!)),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(state!.error!)));
     }
   }
 
@@ -62,60 +62,58 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         title: const Text('CRIAR CONTA'),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: AppSpacing.sheetPadding,
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 16),
-              Center(child: const BdpHexLogo(size: 64)),
-              const SizedBox(height: 32),
-              Text(
-                'Crie sua conta',
-                style: GoogleFonts.barlowCondensed(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.darkText,
-                ),
-              ),
-              const SizedBox(height: 8),
+              AppSpacing.gapBase,
+              const Center(child: BdpHexLogo(size: 64)),
+              AppSpacing.gapXxl,
+              Text('Crie sua conta', style: AppTextStyles.screenTitle),
+              AppSpacing.gapSm,
               Text(
                 'Junte-se ao bolão dos seus amigos.',
-                style: GoogleFonts.dmSans(color: AppColors.mutedDark),
+                style: AppTextStyles.bodySm,
               ),
-              const SizedBox(height: 32),
+              AppSpacing.gapXxl,
               TextFormField(
                 controller: _nameCtrl,
                 textCapitalization: TextCapitalization.words,
                 decoration: const InputDecoration(
                   labelText: 'Nome',
-                  prefixIcon: Icon(Icons.person_outline, color: AppColors.greenLight),
+                  prefixIcon:
+                      Icon(Icons.person_outline, color: AppColors.greenLight),
                 ),
                 validator: (v) =>
                     v == null || v.trim().length < 2 ? 'Nome muito curto' : null,
               ),
-              const SizedBox(height: 16),
+              AppSpacing.gapBase,
               TextFormField(
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
                   labelText: 'Email',
-                  prefixIcon: Icon(Icons.email_outlined, color: AppColors.greenLight),
+                  prefixIcon:
+                      Icon(Icons.email_outlined, color: AppColors.greenLight),
                 ),
                 validator: (v) =>
                     v == null || !v.contains('@') ? 'Email inválido' : null,
               ),
-              const SizedBox(height: 16),
+              AppSpacing.gapBase,
               TextFormField(
                 controller: _passwordCtrl,
                 obscureText: _obscure,
                 decoration: InputDecoration(
                   labelText: 'Senha',
-                  prefixIcon: const Icon(Icons.lock_outline, color: AppColors.greenLight),
+                  prefixIcon: const Icon(Icons.lock_outline,
+                      color: AppColors.greenLight),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                      _obscure
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
                       color: AppColors.mutedDark,
                     ),
                     onPressed: () => setState(() => _obscure = !_obscure),
@@ -126,7 +124,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ? 'Senha deve ter ao menos 8 caracteres'
                     : null,
               ),
-              const SizedBox(height: 32),
+              AppSpacing.gapXxl,
               ElevatedButton(
                 onPressed: isLoading ? null : _submit,
                 child: isLoading
@@ -140,19 +138,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       )
                     : const Text('CRIAR CONTA'),
               ),
-              const SizedBox(height: 16),
+              AppSpacing.gapBase,
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    'Já tem conta? ',
-                    style: GoogleFonts.dmSans(color: AppColors.mutedDark),
-                  ),
+                  Text('Já tem conta? ', style: AppTextStyles.bodySm),
                   GestureDetector(
                     onTap: () => context.pushReplacement('/login'),
                     child: Text(
                       'Entrar',
-                      style: GoogleFonts.dmSans(
+                      style: AppTextStyles.bodyMd.copyWith(
                         color: AppColors.amber,
                         fontWeight: FontWeight.w700,
                       ),

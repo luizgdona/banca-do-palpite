@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/models/pool_model.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/providers/pools_provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/app_loading.dart';
 import '../../../core/widgets/bdp_logo.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -33,43 +35,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         backgroundColor: AppColors.green,
         title: Text(
           'ENTRAR COM CÓDIGO',
-          style: GoogleFonts.barlowCondensed(
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            color: AppColors.amber,
-          ),
+          style: AppTextStyles.sectionTitle.copyWith(color: AppColors.amber),
         ),
         content: TextField(
           controller: _codeCtrl,
           textCapitalization: TextCapitalization.characters,
           maxLength: 8,
-          style: GoogleFonts.barlowCondensed(
+          style: AppTextStyles.inviteCode.copyWith(
             fontSize: 24,
-            fontWeight: FontWeight.w900,
             color: AppColors.offWhite,
-            letterSpacing: 6,
           ),
           decoration: InputDecoration(
             hintText: 'ABCD1234',
-            hintStyle: GoogleFonts.barlowCondensed(
+            hintStyle: AppTextStyles.inviteCode.copyWith(
               fontSize: 24,
               color: AppColors.mutedText,
-              letterSpacing: 6,
             ),
             filled: true,
             fillColor: AppColors.greenMid,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+            border: const OutlineInputBorder(
+              borderRadius: AppSpacing.inputRadius,
               borderSide: BorderSide.none,
             ),
-            counterStyle: GoogleFonts.dmSans(color: AppColors.mutedText),
+            counterStyle: AppTextStyles.caption,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('CANCELAR',
-                style: GoogleFonts.dmSans(color: AppColors.mutedText)),
+            child: Text('CANCELAR', style: AppTextStyles.caption),
           ),
           ElevatedButton(
             onPressed: () {
@@ -117,21 +111,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           slivers: [
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
+                padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg, AppSpacing.xl, AppSpacing.lg, AppSpacing.sm),
                 child: Text(
                   'Olá, ${user?.name.split(' ').first ?? 'campeão'}! 👋',
-                  style: GoogleFonts.barlowCondensed(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.darkText,
-                  ),
+                  style: AppTextStyles.screenTitle,
                 ),
               ),
             ),
-            // Ações rápidas
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: AppSpacing.pagePadding,
                 child: Row(
                   children: [
                     Expanded(
@@ -144,7 +134,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    AppSpacing.gapSmH,
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: _showJoinDialog,
@@ -159,11 +149,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
             ),
-            const SliverToBoxAdapter(child: SizedBox(height: 20)),
-            // Bolões
+            AppSpacing.gapLg,
             poolsAsync.when(
               loading: () => const SliverFillRemaining(
-                child: Center(child: CircularProgressIndicator(color: AppColors.amber)),
+                child: AppLoadingIndicator(),
               ),
               error: (e, _) => SliverFillRemaining(
                 child: Center(child: Text(e.toString())),
@@ -172,26 +161,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ? SliverFillRemaining(
                       child: Center(
                         child: Padding(
-                          padding: const EdgeInsets.all(32),
+                          padding: const EdgeInsets.all(AppSpacing.xxl),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               const Icon(Icons.emoji_events_outlined,
                                   color: AppColors.amber, size: 56),
-                              const SizedBox(height: 16),
+                              AppSpacing.gapBase,
                               Text(
                                 'Nenhum bolão ainda',
-                                style: GoogleFonts.barlowCondensed(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.darkText,
-                                ),
+                                style: AppTextStyles.sectionTitle,
                               ),
-                              const SizedBox(height: 8),
+                              AppSpacing.gapSm,
                               Text(
                                 'Crie um bolão ou entre\ncom um código de convite.',
                                 textAlign: TextAlign.center,
-                                style: GoogleFonts.dmSans(color: AppColors.mutedDark),
+                                style: AppTextStyles.bodySm,
                               ),
                             ],
                           ),
@@ -199,7 +184,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     )
                   : SliverPadding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: AppSpacing.pagePadding,
                       sliver: SliverList(
                         delegate: SliverChildBuilderDelegate(
                           (ctx, i) => _PoolCard(pool: pools[i]),
@@ -208,7 +193,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
             ),
-            const SliverToBoxAdapter(child: SizedBox(height: 20)),
+            AppSpacing.gapLg,
           ],
         ),
       ),
@@ -225,24 +210,27 @@ class _PoolCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => context.push('/pool/${pool.id}'),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.only(bottom: AppSpacing.md),
+        padding: AppSpacing.cardPadding,
         decoration: BoxDecoration(
           color: AppColors.green,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: AppSpacing.cardRadius,
           boxShadow: const [
-            BoxShadow(color: Color(0x20000000), blurRadius: 8, offset: Offset(0, 2)),
+            BoxShadow(
+              color: AppColors.cardShadow,
+              blurRadius: 8,
+              offset: Offset(0, 2),
+            ),
           ],
         ),
         child: Row(
           children: [
-            // Logo da competição
             Container(
               width: 44,
               height: 44,
               decoration: BoxDecoration(
                 color: AppColors.greenMid,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppSpacing.sm),
               ),
               child: pool.competition?.logoUrl != null
                   ? CachedNetworkImage(
@@ -254,35 +242,24 @@ class _PoolCard extends StatelessWidget {
                     )
                   : const Icon(Icons.emoji_events_outlined, color: AppColors.amber),
             ),
-            const SizedBox(width: 14),
-            // Info
+            const SizedBox(width: AppSpacing.md + 2),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    pool.name,
-                    style: GoogleFonts.barlowCondensed(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.offWhite,
-                    ),
-                  ),
+                  Text(pool.name, style: AppTextStyles.cardTitle),
                   Text(
                     pool.competition?.name ?? '',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 12,
-                      color: AppColors.mutedText,
-                    ),
+                    style: AppTextStyles.caption,
                   ),
-                  const SizedBox(height: 6),
+                  AppSpacing.gapXs,
                   Row(
                     children: [
                       _Chip(
                         icon: Icons.group_outlined,
                         label: '${pool.count?.members ?? 0}',
                       ),
-                      const SizedBox(width: 8),
+                      AppSpacing.gapSmH,
                       _Chip(
                         icon: Icons.sports_soccer,
                         label: '${pool.count?.poolMatches ?? 0} jogos',
@@ -310,11 +287,8 @@ class _Chip extends StatelessWidget {
     return Row(
       children: [
         Icon(icon, size: 13, color: AppColors.mutedText),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: GoogleFonts.dmSans(fontSize: 12, color: AppColors.mutedText),
-        ),
+        AppSpacing.gapXs,
+        Text(label, style: AppTextStyles.caption),
       ],
     );
   }

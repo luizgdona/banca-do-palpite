@@ -3,13 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/models/match_model.dart';
 import '../../../core/models/pool_model.dart';
 import '../../../core/models/prediction_model.dart';
 import '../../../core/providers/predictions_provider.dart';
 import '../../../core/providers/realtime_provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/app_live_badge.dart';
+import '../../../core/widgets/app_loading.dart';
 
 class PredictionsScreen extends ConsumerStatefulWidget {
   final PoolModel pool;
@@ -47,25 +50,15 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen> {
     }
 
     return predictionsAsync.when(
-      loading: () => const Center(
-        child: CircularProgressIndicator(color: AppColors.amber),
-      ),
+      loading: () => const AppLoadingIndicator(),
       error: (e, _) => Center(child: Text(e.toString())),
       data: (predictions) => ListView(
         padding: const EdgeInsets.all(16),
         children: [
           for (final entry in groups.entries) ...[
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text(
-                entry.key,
-                style: GoogleFonts.barlowCondensed(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.mutedDark,
-                  letterSpacing: 1,
-                ),
-              ),
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+              child: Text(entry.key, style: AppTextStyles.tabLabel),
             ),
             for (final match in entry.value)
               _PredictionCard(
@@ -173,14 +166,11 @@ class _PredictionCardState extends ConsumerState<_PredictionCard> {
               child: Row(
                 children: [
                   if (isLive)
-                    _LiveBadge(minute: match.minute)
+                    AppLiveBadge(minute: match.minute)
                   else
                     Text(
                       _formatTime(match.scheduledAt),
-                      style: GoogleFonts.dmSans(
-                        fontSize: 11,
-                        color: AppColors.mutedText,
-                      ),
+                      style: AppTextStyles.micro,
                     ),
                   const Spacer(),
                   _SaveIndicator(state: _saveState, locked: locked),
@@ -197,32 +187,27 @@ class _PredictionCardState extends ConsumerState<_PredictionCard> {
                     child: Text(
                       match.homeTeam.name,
                       textAlign: TextAlign.right,
-                      style: GoogleFonts.barlowCondensed(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.offWhite,
-                      ),
+                      style: AppTextStyles.teamName.copyWith(fontSize: 16),
                     ),
                   ),
                   const SizedBox(width: 10),
-                  // Real score (if live/finished)
                   if (isLive || isFinished) ...[
                     _RealScoreDisplay(
                       home: match.homeScore ?? 0,
                       away: match.awayScore ?? 0,
                     ),
                   ] else ...[
-                    // Prediction inputs
                     _ScoreInput(
                       controller: _homeCtrl,
                       enabled: !locked,
                       onChanged: (_) => _onChanged(),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.xs + 2),
                       child: Text(
                         '×',
-                        style: GoogleFonts.barlowCondensed(
+                        style: AppTextStyles.sectionTitle.copyWith(
                           fontSize: 20,
                           color: AppColors.mutedText,
                         ),
@@ -235,15 +220,10 @@ class _PredictionCardState extends ConsumerState<_PredictionCard> {
                     ),
                   ],
                   const SizedBox(width: 10),
-                  // Away team
                   Expanded(
                     child: Text(
                       match.awayTeam.name,
-                      style: GoogleFonts.barlowCondensed(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.offWhite,
-                      ),
+                      style: AppTextStyles.teamName.copyWith(fontSize: 16),
                     ),
                   ),
                 ],
@@ -288,9 +268,8 @@ class _ScoreInput extends StatelessWidget {
         maxLength: 2,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         onChanged: onChanged,
-        style: GoogleFonts.barlowCondensed(
+        style: AppTextStyles.scoreLg.copyWith(
           fontSize: 24,
-          fontWeight: FontWeight.w900,
           color: enabled ? AppColors.amber : AppColors.mutedText,
         ),
         decoration: InputDecoration(
@@ -298,17 +277,17 @@ class _ScoreInput extends StatelessWidget {
           contentPadding: EdgeInsets.zero,
           filled: true,
           fillColor: enabled ? AppColors.greenMid : AppColors.green,
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: AppColors.greenLight),
+          enabledBorder: const OutlineInputBorder(
+            borderRadius: AppSpacing.inputRadius,
+            borderSide: BorderSide(color: AppColors.greenLight),
           ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: AppColors.amber, width: 2),
+          focusedBorder: const OutlineInputBorder(
+            borderRadius: AppSpacing.inputRadius,
+            borderSide: BorderSide(color: AppColors.amber, width: 2),
           ),
-          disabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: AppColors.greenLight),
+          disabledBorder: const OutlineInputBorder(
+            borderRadius: AppSpacing.inputRadius,
+            borderSide: BorderSide(color: AppColors.greenLight),
           ),
         ),
       ),
@@ -326,32 +305,15 @@ class _RealScoreDisplay extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          '$home',
-          style: GoogleFonts.barlowCondensed(
-            fontSize: 32,
-            fontWeight: FontWeight.w900,
-            color: AppColors.amber,
-          ),
-        ),
+        Text('$home', style: AppTextStyles.scoreLg),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs + 2),
           child: Text(
             '×',
-            style: GoogleFonts.barlowCondensed(
-              fontSize: 20,
-              color: AppColors.mutedText,
-            ),
+            style: AppTextStyles.sectionTitle.copyWith(color: AppColors.mutedText),
           ),
         ),
-        Text(
-          '$away',
-          style: GoogleFonts.barlowCondensed(
-            fontSize: 32,
-            fontWeight: FontWeight.w900,
-            color: AppColors.amber,
-          ),
-        ),
+        Text('$away', style: AppTextStyles.scoreLg),
       ],
     );
   }
@@ -363,40 +325,34 @@ class _PredictionRecap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pointColor = prediction.pointsEarned >= 3
+        ? AppColors.exactColor
+        : AppColors.winColor;
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 6, 14, 10),
+      padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md, AppSpacing.xs + 2, AppSpacing.md, AppSpacing.sm + 2),
       child: Row(
         children: [
           Text(
             'Seu palpite: ${prediction.homeScore} × ${prediction.awayScore}',
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
-              color: AppColors.mutedText,
-            ),
+            style: AppTextStyles.caption,
           ),
           const Spacer(),
           if (prediction.pointsEarned > 0)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm, vertical: AppSpacing.xs / 2),
               decoration: BoxDecoration(
-                color: prediction.pointsEarned >= 3
-                    ? AppColors.exactColor.withAlpha(30)
-                    : AppColors.winColor.withAlpha(30),
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(
-                  color: prediction.pointsEarned >= 3
-                      ? AppColors.exactColor
-                      : AppColors.winColor,
-                ),
+                color: pointColor.withAlpha(30),
+                borderRadius: AppSpacing.badgeRadius,
+                border: Border.all(color: pointColor),
               ),
               child: Text(
                 '+${prediction.pointsEarned} pts',
-                style: GoogleFonts.barlowCondensed(
+                style: AppTextStyles.tabLabel.copyWith(
                   fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                  color: prediction.pointsEarned >= 3
-                      ? AppColors.exactColor
-                      : AppColors.winColor,
+                  color: pointColor,
                 ),
               ),
             ),
@@ -406,58 +362,6 @@ class _PredictionRecap extends StatelessWidget {
   }
 }
 
-class _LiveBadge extends StatefulWidget {
-  final int? minute;
-  const _LiveBadge({this.minute});
-
-  @override
-  State<_LiveBadge> createState() => _LiveBadgeState();
-}
-
-class _LiveBadgeState extends State<_LiveBadge>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _pulse;
-  late final Animation<double> _opacity;
-
-  @override
-  void initState() {
-    super.initState();
-    _pulse = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-    )..repeat(reverse: true);
-    _opacity = Tween<double>(begin: 0.4, end: 1.0).animate(_pulse);
-  }
-
-  @override
-  void dispose() {
-    _pulse.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _opacity,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-        decoration: BoxDecoration(
-          color: AppColors.liveBadge,
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Text(
-          '● AO VIVO${widget.minute != null ? "  ${widget.minute}'" : ""}',
-          style: GoogleFonts.barlowCondensed(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-            letterSpacing: 0.5,
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class _SaveIndicator extends StatelessWidget {
   final _SaveState state;
@@ -473,10 +377,7 @@ class _SaveIndicator extends StatelessWidget {
         children: [
           const Icon(Icons.lock_outline, size: 12, color: AppColors.mutedText),
           const SizedBox(width: 4),
-          Text(
-            'encerrado',
-            style: GoogleFonts.dmSans(fontSize: 11, color: AppColors.mutedText),
-          ),
+          Text('encerrado', style: AppTextStyles.micro),
         ],
       );
     }
@@ -494,10 +395,7 @@ class _SaveIndicator extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 4),
-            Text(
-              'salvando...',
-              style: GoogleFonts.dmSans(fontSize: 11, color: AppColors.mutedText),
-            ),
+            Text('salvando...', style: AppTextStyles.micro),
           ],
         ),
       _SaveState.saved => Row(
@@ -508,10 +406,7 @@ class _SaveIndicator extends StatelessWidget {
             const SizedBox(width: 4),
             Text(
               'palpite salvo',
-              style: GoogleFonts.dmSans(
-                fontSize: 11,
-                color: AppColors.winColor,
-              ),
+              style: AppTextStyles.micro.copyWith(color: AppColors.winColor),
             ),
           ],
         ),
@@ -522,7 +417,7 @@ class _SaveIndicator extends StatelessWidget {
             const SizedBox(width: 4),
             Text(
               'erro',
-              style: GoogleFonts.dmSans(fontSize: 11, color: AppColors.liveBadge),
+              style: AppTextStyles.micro.copyWith(color: AppColors.liveBadge),
             ),
           ],
         ),

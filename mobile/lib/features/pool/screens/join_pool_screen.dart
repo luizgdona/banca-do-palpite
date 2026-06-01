@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/providers/pools_provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/app_loading.dart';
 
 class JoinPoolScreen extends ConsumerStatefulWidget {
   final String inviteCode;
@@ -22,7 +24,8 @@ class _JoinPoolScreenState extends ConsumerState<JoinPoolScreen> {
     setState(() => _isJoining = true);
     try {
       final client = ref.read(apiClientProvider);
-      final response = await client.dio.post('/pools/join/${widget.inviteCode}/confirm');
+      final response =
+          await client.dio.post('/pools/join/${widget.inviteCode}/confirm');
       final poolId = response.data['poolId'] as String;
       if (!mounted) return;
       await ref.read(poolsProvider.notifier).refresh();
@@ -30,9 +33,8 @@ class _JoinPoolScreenState extends ConsumerState<JoinPoolScreen> {
       context.go('/pool/$poolId');
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
       if (mounted) setState(() => _isJoining = false);
     }
@@ -49,38 +51,35 @@ class _JoinPoolScreenState extends ConsumerState<JoinPoolScreen> {
         title: const Text('ENTRAR NO BOLÃO'),
       ),
       body: previewAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.amber)),
+        loading: () => const AppLoadingIndicator(),
         error: (e, _) => Center(
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: AppSpacing.sheetPadding,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.error_outline, color: AppColors.liveBadge, size: 48),
-                const SizedBox(height: 16),
+                const Icon(Icons.error_outline,
+                    color: AppColors.liveBadge, size: 48),
+                AppSpacing.gapBase,
                 Text(
                   'Código de convite inválido',
-                  style: GoogleFonts.barlowCondensed(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.darkText,
-                  ),
+                  style: AppTextStyles.sectionTitle,
                 ),
               ],
             ),
           ),
         ),
         data: (preview) => Padding(
-          padding: const EdgeInsets.all(24),
+          padding: AppSpacing.sheetPadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 16),
+              AppSpacing.gapBase,
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(AppSpacing.lg),
                 decoration: BoxDecoration(
                   color: AppColors.green,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: AppSpacing.cardRadius,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,64 +89,46 @@ class _JoinPoolScreenState extends ConsumerState<JoinPoolScreen> {
                         imageUrl: preview.competition!.logoUrl!,
                         width: 40,
                         height: 40,
-                        errorWidget: (_, __, ___) =>
-                            const Icon(Icons.emoji_events_outlined, color: AppColors.amber),
+                        errorWidget: (_, __, ___) => const Icon(
+                            Icons.emoji_events_outlined,
+                            color: AppColors.amber),
                       ),
-                    const SizedBox(height: 12),
+                    AppSpacing.gapMd,
                     Text(
                       preview.name,
-                      style: GoogleFonts.barlowCondensed(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
+                      style: AppTextStyles.screenTitle.copyWith(
                         color: AppColors.amber,
                       ),
                     ),
                     if (preview.competition != null)
                       Text(
                         preview.competition!.name,
-                        style: GoogleFonts.dmSans(
-                          fontSize: 14,
+                        style: AppTextStyles.bodyMd.copyWith(
                           color: AppColors.mutedText,
                         ),
                       ),
-                    const SizedBox(height: 16),
-                    if (preview.description != null && preview.description!.isNotEmpty)
-                      Text(
-                        preview.description!,
-                        style: GoogleFonts.dmSans(
-                          fontSize: 14,
-                          color: AppColors.offWhite,
+                    AppSpacing.gapBase,
+                    if (preview.description != null &&
+                        preview.description!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.base),
+                        child: Text(
+                          preview.description!,
+                          style: AppTextStyles.bodyMd.copyWith(
+                            color: AppColors.offWhite,
+                          ),
                         ),
                       ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        const Icon(Icons.person_outline,
-                            color: AppColors.mutedText, size: 16),
-                        const SizedBox(width: 6),
-                        Text(
+                    _InfoRow(
+                      icon: Icons.person_outline,
+                      label:
                           'Criado por ${preview.owner?.name ?? 'alguém'}',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 13,
-                            color: AppColors.mutedText,
-                          ),
-                        ),
-                      ],
                     ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        const Icon(Icons.group_outlined,
-                            color: AppColors.mutedText, size: 16),
-                        const SizedBox(width: 6),
-                        Text(
+                    AppSpacing.gapXs,
+                    _InfoRow(
+                      icon: Icons.group_outlined,
+                      label:
                           '${preview.memberCount} participante${preview.memberCount != 1 ? 's' : ''}',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 13,
-                            color: AppColors.mutedText,
-                          ),
-                        ),
-                      ],
                     ),
                   ],
                 ),
@@ -155,15 +136,16 @@ class _JoinPoolScreenState extends ConsumerState<JoinPoolScreen> {
               const Spacer(),
               if (preview.status != 'open')
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
                     color: AppColors.liveBadge.withAlpha(30),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: AppSpacing.inputRadius,
                     border: Border.all(color: AppColors.liveBadge),
                   ),
                   child: Text(
                     'Este bolão não está mais aceitando novos membros.',
-                    style: GoogleFonts.dmSans(color: AppColors.liveBadge),
+                    style: AppTextStyles.bodyMd.copyWith(
+                        color: AppColors.liveBadge),
                   ),
                 )
               else
@@ -178,11 +160,29 @@ class _JoinPoolScreenState extends ConsumerState<JoinPoolScreen> {
                         )
                       : const Text('ENTRAR NO BOLÃO'),
                 ),
-              const SizedBox(height: 12),
+              AppSpacing.gapMd,
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  const _InfoRow({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, color: AppColors.mutedText, size: 16),
+        AppSpacing.gapXs,
+        const SizedBox(width: 2),
+        Text(label, style: AppTextStyles.bodySm),
+      ],
     );
   }
 }

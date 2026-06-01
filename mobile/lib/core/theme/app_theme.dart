@@ -94,7 +94,7 @@ class AppTheme {
         cardTheme: const CardTheme(
           color: AppColors.green,
           elevation: 4,
-          shadowColor: Color(0x40000000),
+          shadowColor: AppColors.shadowDark,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(14)),
           ),

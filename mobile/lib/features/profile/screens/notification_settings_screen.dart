@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/providers/notifications_provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/app_loading.dart';
 
 class NotificationSettingsScreen extends ConsumerWidget {
   const NotificationSettingsScreen({super.key});
@@ -18,8 +20,7 @@ class NotificationSettingsScreen extends ConsumerWidget {
         title: const Text('NOTIFICAÇÕES'),
       ),
       body: prefsAsync.when(
-        loading: () => const Center(
-            child: CircularProgressIndicator(color: AppColors.amber)),
+        loading: () => const AppLoadingIndicator(),
         error: (e, _) => Center(child: Text(e.toString())),
         data: (prefs) => ListView(
           children: [
@@ -65,15 +66,14 @@ class NotificationSettingsScreen extends ConsumerWidget {
               prefKey: 'notif_member_joined',
               ref: ref,
             ),
-            const SizedBox(height: 24),
+            AppSpacing.gapXl,
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: AppSpacing.pagePadding,
               child: Text(
                 'As preferências são salvas localmente. '
                 'O servidor ainda enviará a notificação; '
                 'ela será filtrada no dispositivo.',
-                style: GoogleFonts.dmSans(
-                    fontSize: 12, color: AppColors.mutedDark),
+                style: AppTextStyles.caption,
               ),
             ),
           ],
@@ -90,14 +90,14 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 6),
+      padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.xs + 2),
       child: Text(
         title,
-        style: GoogleFonts.barlowCondensed(
-          fontSize: 13,
+        style: AppTextStyles.micro.copyWith(
           fontWeight: FontWeight.w700,
-          color: AppColors.mutedDark,
           letterSpacing: 1.5,
+          color: AppColors.mutedDark,
         ),
       ),
     );
@@ -127,15 +127,9 @@ class _NotifTile extends StatelessWidget {
       secondary: Text(icon, style: const TextStyle(fontSize: 22)),
       title: Text(
         label,
-        style: GoogleFonts.dmSans(
-          fontWeight: FontWeight.w600,
-          color: AppColors.darkText,
-        ),
+        style: AppTextStyles.bodyMd.copyWith(fontWeight: FontWeight.w600),
       ),
-      subtitle: Text(
-        subtitle,
-        style: GoogleFonts.dmSans(fontSize: 12, color: AppColors.mutedDark),
-      ),
+      subtitle: Text(subtitle, style: AppTextStyles.caption),
       value: value,
       activeColor: AppColors.amber,
       activeTrackColor: AppColors.amber.withAlpha(80),

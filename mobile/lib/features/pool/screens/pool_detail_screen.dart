@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../core/models/match_model.dart';
@@ -10,6 +9,11 @@ import '../../../core/providers/auth_provider.dart';
 import '../../../core/providers/pools_provider.dart';
 import '../../../core/providers/realtime_provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/app_avatar.dart';
+import '../../../core/widgets/app_live_badge.dart';
+import '../../../core/widgets/app_loading.dart';
 import '../../predictions/screens/predictions_screen.dart';
 import '../../ranking/screens/ranking_screen.dart';
 
@@ -22,10 +26,7 @@ class PoolDetailScreen extends ConsumerWidget {
     final poolAsync = ref.watch(poolDetailProvider(poolId));
 
     return poolAsync.when(
-      loading: () => const Scaffold(
-        backgroundColor: AppColors.cream,
-        body: Center(child: CircularProgressIndicator(color: AppColors.amber)),
-      ),
+      loading: () => const AppLoadingScaffold(),
       error: (e, _) => Scaffold(
         backgroundColor: AppColors.cream,
         body: Center(child: Text(e.toString())),
@@ -99,19 +100,14 @@ class _PoolDetailViewState extends ConsumerState<_PoolDetailView>
                 children: [
                   Text(
                     pool.name,
-                    style: GoogleFonts.barlowCondensed(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
+                    style: AppTextStyles.sectionTitle.copyWith(
                       color: AppColors.offWhite,
                     ),
                   ),
                   if (pool.competition != null)
                     Text(
                       pool.competition!.name,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 12,
-                        color: AppColors.mutedText,
-                      ),
+                      style: AppTextStyles.caption,
                     ),
                 ],
               ),
@@ -120,10 +116,7 @@ class _PoolDetailViewState extends ConsumerState<_PoolDetailView>
               controller: _tabs,
               indicatorColor: AppColors.amber,
               indicatorWeight: 3,
-              labelStyle: GoogleFonts.barlowCondensed(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-              ),
+              labelStyle: AppTextStyles.tabLabel,
               labelColor: AppColors.amber,
               unselectedLabelColor: AppColors.mutedText,
               tabs: const [
@@ -186,27 +179,14 @@ class _MatchCard extends StatelessWidget {
           Row(
             children: [
               if (isLive)
-                Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: AppColors.liveBadge,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    '● AO VIVO${match.minute != null ? "  ${match.minute}'" : ""}',
-                    style: GoogleFonts.barlowCondensed(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
+                Padding(
+                  padding: const EdgeInsets.only(right: AppSpacing.sm),
+                  child: AppLiveBadge(minute: match.minute),
                 )
               else
                 Text(
                   _formatDate(match.scheduledAt),
-                  style: GoogleFonts.dmSans(fontSize: 11, color: AppColors.mutedText),
+                  style: AppTextStyles.micro,
                 ),
             ],
           ),
@@ -217,57 +197,28 @@ class _MatchCard extends StatelessWidget {
                 child: Text(
                   match.homeTeam.name,
                   textAlign: TextAlign.right,
-                  style: GoogleFonts.barlowCondensed(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.offWhite,
-                  ),
+                  style: AppTextStyles.teamName,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               if (isLive || isFinished) ...[
-                Text(
-                  '${match.homeScore ?? 0}',
-                  style: GoogleFonts.barlowCondensed(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.amber,
-                  ),
-                ),
+                Text('${match.homeScore ?? 0}', style: AppTextStyles.scoreMd),
                 Text(
                   '  ×  ',
-                  style: GoogleFonts.barlowCondensed(
-                    fontSize: 18,
-                    color: AppColors.mutedText,
-                  ),
+                  style: AppTextStyles.bodySm.copyWith(color: AppColors.mutedText),
                 ),
-                Text(
-                  '${match.awayScore ?? 0}',
-                  style: GoogleFonts.barlowCondensed(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.amber,
-                  ),
-                ),
+                Text('${match.awayScore ?? 0}', style: AppTextStyles.scoreMd),
               ] else
                 Text(
                   '  ×  ',
-                  style: GoogleFonts.barlowCondensed(
-                    fontSize: 22,
+                  style: AppTextStyles.sectionTitle.copyWith(
                     fontWeight: FontWeight.w700,
                     color: AppColors.mutedText,
                   ),
                 ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
-                child: Text(
-                  match.awayTeam.name,
-                  style: GoogleFonts.barlowCondensed(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.offWhite,
-                  ),
-                ),
+                child: Text(match.awayTeam.name, style: AppTextStyles.teamName),
               ),
             ],
           ),
@@ -294,7 +245,7 @@ class _MembersTab extends ConsumerWidget {
       future: _fetchMembers(ref),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator(color: AppColors.amber));
+          return const AppLoadingIndicator();
         }
         if (snapshot.hasError) {
           return Center(child: Text(snapshot.error.toString()));
@@ -307,28 +258,18 @@ class _MembersTab extends ConsumerWidget {
             final m = members[i] as Map<String, dynamic>;
             final user = m['user'] as Map<String, dynamic>;
             return ListTile(
-              leading: CircleAvatar(
+              leading: AppAvatar(
+                name: user['name'] as String,
                 backgroundColor: AppColors.greenMid,
-                child: Text(
-                  (user['name'] as String)[0].toUpperCase(),
-                  style: GoogleFonts.barlowCondensed(
-                    color: AppColors.amber,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
               ),
               title: Text(
                 user['name'] as String,
-                style: GoogleFonts.dmSans(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.darkText,
-                ),
+                style: AppTextStyles.memberName,
               ),
               trailing: Text(
                 '${m['totalPoints'] ?? 0} pts',
-                style: GoogleFonts.barlowCondensed(
+                style: AppTextStyles.tabLabel.copyWith(
                   fontSize: 16,
-                  fontWeight: FontWeight.w700,
                   color: AppColors.green,
                 ),
               ),
@@ -373,23 +314,16 @@ class _InviteSheet extends StatelessWidget {
             const SizedBox(height: 20),
             Text(
               'CONVITE',
-              style: GoogleFonts.barlowCondensed(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: AppColors.offWhite,
-              ),
+              style: AppTextStyles.sectionTitle.copyWith(color: AppColors.offWhite),
             ),
-            const SizedBox(height: 4),
-            Text(
-              pool.name,
-              style: GoogleFonts.dmSans(color: AppColors.mutedText, fontSize: 14),
-            ),
+            AppSpacing.gapXs,
+            Text(pool.name, style: AppTextStyles.bodyMd.copyWith(color: AppColors.mutedText)),
             const SizedBox(height: 24),
             QrImageView(
               data: inviteUrl,
               version: QrVersions.auto,
               size: 180,
-              backgroundColor: Colors.white,
+              backgroundColor: AppColors.offWhite,
               eyeStyle: const QrEyeStyle(
                 eyeShape: QrEyeShape.square,
                 color: AppColors.green,
@@ -401,20 +335,15 @@ class _InviteSheet extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.base,
+                vertical: AppSpacing.sm + 2,
+              ),
+              decoration: const BoxDecoration(
                 color: AppColors.greenMid,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: AppSpacing.inputRadius,
               ),
-              child: Text(
-                pool.inviteCode,
-                style: GoogleFonts.barlowCondensed(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.amber,
-                  letterSpacing: 8,
-                ),
-              ),
+              child: Text(pool.inviteCode, style: AppTextStyles.inviteCode),
             ),
             const SizedBox(height: 20),
             Row(
