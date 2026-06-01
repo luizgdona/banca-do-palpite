@@ -19,6 +19,7 @@ const envSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   RESEND_API_KEY: z.string().optional(),
   FROM_EMAIL: z.string().default('noreply@bancadopalpite.app'),
+  SYNC_ADMIN_KEY: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);
