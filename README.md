@@ -1,8 +1,97 @@
-# Banca do Paplpite
+# banca-do-palpite
 
 **Friends' prediction pool. Live scores.**
 
 Sports prediction pool app with match guesses, live scoring via WebSocket, and real-time rankings. Runs as a PWA and native Android/iOS app built with Flutter.
+
+---
+
+## How to make a prediction
+
+> A complete walkthrough from login to seeing your score on the ranking.
+
+<table>
+<tr>
+
+<td align="center" width="200">
+
+**Step 1 — Sign in**
+
+<img src="docs/screenshots/01_login.png" width="180" alt="Login screen"/>
+
+Enter your email and password and tap **ENTRAR**.  
+No account? Tap **Criar conta** to register.
+
+</td>
+
+<td align="center" width="200">
+
+**Step 2 — Choose a pool**
+
+<img src="docs/screenshots/02_home.png" width="180" alt="Home screen"/>
+
+Your pools appear on the home screen.  
+Tap a card to open it, or use **ENTRAR** to join one with an invite code.
+
+</td>
+
+<td align="center" width="200">
+
+**Step 3 — Browse matches**
+
+<img src="docs/screenshots/03_pool_detail.png" width="180" alt="Pool detail — Jogos tab"/>
+
+Inside the pool, the **JOGOS** tab lists all matches.  
+🔴 Red border = live right now.  
+Matches without a score are still open for predictions.
+
+</td>
+
+</tr>
+<tr>
+
+<td align="center" width="200">
+
+**Step 4 — Enter your prediction**
+
+<img src="docs/screenshots/04_predictions.png" width="180" alt="Predictions screen"/>
+
+Tap the score boxes and type your guess (e.g. **2 × 1**).  
+The prediction saves automatically after you stop typing — you'll see **"salvando…"** then a ✓.  
+Predictions **lock when the match kicks off** — plan ahead!
+
+</td>
+
+<td align="center" width="200">
+
+**Step 5 — Check the ranking**
+
+<img src="docs/screenshots/05_ranking.png" width="180" alt="Ranking screen"/>
+
+Switch to the **RANKING** tab after the match ends.  
+Points are calculated automatically:  
+🎯 Exact score → **3 pts**  
+✅ Correct result → **1 pt**  
+Your position is always pinned at the bottom.
+
+</td>
+
+<td align="center" width="200">
+
+**Scoring summary**
+
+| Result | Points |
+|---|---|
+| Exact scoreline | 3 pts (default) |
+| Correct winner / draw | 1 pt (default) |
+| Wrong result | 0 pts |
+
+Point values are set by the pool creator when the pool is created and can be customised (1–10 pts each).
+
+</td>
+
+</tr>
+</table>
 
 ---
 
