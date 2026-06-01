@@ -1,4 +1,4 @@
-# banca-do-palpite
+# Banca do Paplpite
 
 **Friends' prediction pool. Live scores.**
 
