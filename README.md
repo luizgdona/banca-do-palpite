@@ -72,6 +72,38 @@ Copie `backend/.env.example` para `backend/.env` e preencha:
 
 ---
 
+## Ativar push notifications (Firebase)
+
+1. Crie um projeto no [Firebase Console](https://console.firebase.google.com)
+2. **Android:** baixe `google-services.json` → coloque em `mobile/android/app/`
+   (template em `mobile/android/app/google-services.json.example`)
+3. **iOS:** baixe `GoogleService-Info.plist` → coloque em `mobile/ios/Runner/`
+   (template em `mobile/ios/Runner/GoogleService-Info.plist.example`)
+4. No backend, preencha no `.env`:
+   ```
+   FIREBASE_PROJECT_ID=seu-project-id
+   FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+   FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@projeto.iam.gserviceaccount.com
+   ```
+5. No `mobile/pubspec.yaml`, descomente `firebase_core` e `firebase_messaging`
+6. Em `lib/core/providers/firebase_provider.dart`, substitua os stubs pelo código real
+
+> Sem Firebase configurado, o app funciona normalmente — notificações são ignoradas silenciosamente.
+
+## Ativar deep links (Android)
+
+Em `android/app/src/main/AndroidManifest.xml`, adicione dentro de `<activity>`:
+```xml
+<intent-filter android:autoVerify="true">
+  <action android:name="android.intent.action.VIEW"/>
+  <category android:name="android.intent.category.DEFAULT"/>
+  <category android:name="android.intent.category.BROWSABLE"/>
+  <data android:scheme="https" android:host="bancadopalpite.app"/>
+</intent-filter>
+```
+
+---
+
 ## API — Endpoints principais
 
 ```
@@ -125,7 +157,7 @@ Quando o jogo termina: `calculate-points` executa, pontos são creditados, ranki
 - [x] **Fase 2** — Core do Bolão: competitions + sync API-Football, CRUD pools, invite code, telas Flutter (criar bolão stepper, detalhes, convite QR)
 - [x] **Fase 3** — Palpites e Ranking: predictions com validação temporal server-side, calculate-points atômico e idempotente, ranking com tiebreaker, telas Flutter inline com debounce
 - [x] **Fase 4** — Tempo Real: WebSocket autenticado, Redis pub/sub, BullMQ live-scores job, reconexão exponential backoff no Flutter
-- [ ] **Fase 5** — Polimento: push notifications Firebase, deep links, perfil, OAuth Google, PWA manifest
+- [x] **Fase 5** — Polimento: push notifications Firebase (lazy init), OAuth Google, deep links, perfil, configurações de notificação, PWA manifest, 28 testes unitários
 
 ---
 

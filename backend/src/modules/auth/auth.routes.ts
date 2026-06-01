@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { AuthService } from './auth.service.js';
 import { registerSchema, loginSchema } from './auth.schema.js';
+import { z } from 'zod';
 import { authGuard } from '../../shared/middleware/authGuard.js';
 
 const REFRESH_COOKIE = 'refresh_token';
@@ -49,5 +50,20 @@ export async function authRoutes(fastify: FastifyInstance) {
   fastify.get('/auth/me', { preHandler: authGuard }, async (request, reply) => {
     const user = await service.getMe(request.userId);
     return reply.send(user);
+  });
+
+  // OAuth Google — recebe o idToken do cliente Flutter
+  fastify.post('/auth/google', async (request, reply) => {
+    const { idToken } = z.object({ idToken: z.string().min(1) }).parse(request.body);
+    const { user, accessToken, refreshToken } = await service.loginWithGoogle(idToken);
+    reply.setCookie(REFRESH_COOKIE, refreshToken, COOKIE_OPTS);
+    return reply.send({ user, accessToken });
+  });
+
+  // Registrar/atualizar token FCM do dispositivo
+  fastify.post('/auth/fcm-token', { preHandler: authGuard }, async (request, reply) => {
+    const { token } = z.object({ token: z.string().min(1) }).parse(request.body);
+    await service.updateFcmToken(request.userId, token);
+    return reply.send({ ok: true });
   });
 }

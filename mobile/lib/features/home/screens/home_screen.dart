@@ -106,7 +106,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.person_outline, color: AppColors.offWhite),
-            onPressed: () {},
+            onPressed: () => context.push('/profile'),
           ),
         ],
       ),

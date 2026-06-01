@@ -42,6 +42,9 @@ dependencies:
   # Share
   share_plus: ^9.0.0
 
+  # Deep links
+  app_links: ^6.1.1
+
   # Confetti
   confetti: ^0.7.0
 

@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
 import { ConflictError, UnauthorizedError, NotFoundError } from '../../shared/errors/AppError.js';
+import { verifyGoogleIdToken } from './google-oauth.js';
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -81,6 +82,41 @@ export class AuthService {
     });
     if (!user) throw new NotFoundError('Usuário não encontrado');
     return user;
+  }
+
+  async loginWithGoogle(idToken: string) {
+    const profile = await verifyGoogleIdToken(idToken);
+
+    const user = await this.prisma.user.upsert({
+      where: { email: profile.email },
+      update: {
+        name: profile.name,
+        avatarUrl: profile.picture,
+        provider: 'google',
+        providerId: profile.sub,
+      },
+      create: {
+        email: profile.email,
+        name: profile.name,
+        avatarUrl: profile.picture,
+        provider: 'google',
+        providerId: profile.sub,
+      },
+    });
+
+    const { accessToken, refreshToken } = await this.issueTokens(user.id, user.email);
+    return {
+      user: { id: user.id, name: user.name, email: user.email, avatarUrl: user.avatarUrl },
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  async updateFcmToken(userId: string, fcmToken: string) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { fcmToken },
+    });
   }
 
   private async issueTokens(userId: string, email: string) {

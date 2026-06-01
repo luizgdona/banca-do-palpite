@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { customAlphabet } from 'nanoid';
 import { NotFoundError, ForbiddenError, ConflictError } from '../../shared/errors/AppError.js';
+import { notifyMemberJoined } from '../notifications/notifications.triggers.js';
 import type { CreatePoolInput, UpdatePoolInput } from './pools.schema.js';
 
 const nanoid = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 8);
@@ -159,9 +160,15 @@ export class PoolsService {
     });
     if (existing) throw new ConflictError('Você já está neste bolão');
 
-    await this.prisma.poolMember.create({
-      data: { poolId: pool.id, userId },
-    });
+    const [, newUser] = await Promise.all([
+      this.prisma.poolMember.create({ data: { poolId: pool.id, userId } }),
+      this.prisma.user.findUnique({ where: { id: userId }, select: { name: true } }),
+    ]);
+
+    // Fire-and-forget — notifica o dono do bolão
+    if (newUser) {
+      notifyMemberJoined(this.prisma, pool.id, newUser.name).catch(() => {});
+    }
 
     return { poolId: pool.id };
   }

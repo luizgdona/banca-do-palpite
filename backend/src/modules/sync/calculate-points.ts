@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { notifyExactScore, notifyMatchFinished } from '../notifications/notifications.triggers.js';
 
 interface PointsResult {
   matchId: string;
@@ -107,6 +108,23 @@ export async function calculatePointsForMatch(
         }
       }
     });
+
+    // Fire-and-forget notifications — never block point calculation
+    Promise.allSettled([
+      notifyMatchFinished(prisma, matchId),
+      ...predictions
+        .filter((p) => {
+          const { points } = calcPoints(
+            p.homeScore, p.awayScore,
+            match.homeScore!, match.awayScore!,
+            pm.pool.scoringExact, pm.pool.scoringResult,
+          );
+          return points === pm.pool.scoringExact;
+        })
+        .map((p) =>
+          notifyExactScore(prisma, p.userId, pm.poolId, pm.pool.scoringExact),
+        ),
+    ]).catch(() => {});
 
     processed++;
   }

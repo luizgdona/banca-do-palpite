@@ -8,6 +8,7 @@ const bullConnection = { url: env.REDIS_URL } as const;
 import { callFootballApi, mapFixtureStatus, type ApiFootballFixture } from '../../config/football-api.js';
 import { calculatePointsForMatch } from './calculate-points.js';
 import { publishMatchUpdate, publishRankingUpdate } from '../websocket/redis-subscriber.js';
+import { notifyMatchStarted, notifyMatchStartingSoon } from '../notifications/notifications.triggers.js';
 
 const QUEUE_NAME = 'sync-live-scores';
 
@@ -97,11 +98,15 @@ async function syncLiveScores(prisma: PrismaClient, job: Job) {
       prevStatus,
     });
 
-    // Calculate points and notify ranking if match just finished
+    // Notify when match transitions scheduled → live
+    if (newStatus === 'live' && prevStatus === 'scheduled') {
+      notifyMatchStarted(prisma, existing.id).catch(() => {});
+    }
+
+    // Calculate points, notify ranking and push when match finishes
     if (newStatus === 'finished' && prevStatus !== 'finished') {
       await calculatePointsForMatch(prisma, existing.id);
 
-      // Find all pools with this match and publish ranking updates
       const poolRows = await prisma.poolMatch.findMany({
         where: { matchId: existing.id },
         select: { poolId: true },

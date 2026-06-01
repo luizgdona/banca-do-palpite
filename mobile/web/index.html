@@ -1,36 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Bolão de amigos. Placar em tempo real.">
+  <meta name="theme-color" content="#124832">
 
-  <!-- iOS meta tags & icons -->
+  <!-- PWA -->
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="banca_do_palpite">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Banca do Palpite">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Banca do Palpite">
+  <meta property="og:description" content="Bolão de amigos. Placar em tempo real.">
+  <meta property="og:type" content="website">
+
+  <!-- Icons -->
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/Icon-512.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" href="favicon.png">
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
-
-  <title>banca_do_palpite</title>
   <link rel="manifest" href="manifest.json">
+
+  <title>Banca do Palpite</title>
+
+  <style>
+    body {
+      background-color: #124832;
+      margin: 0;
+      padding: 0;
+    }
+  </style>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>

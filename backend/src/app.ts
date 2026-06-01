@@ -15,6 +15,7 @@ import { rankingsRoutes } from './modules/rankings/rankings.routes.js';
 import { syncRoutes } from './modules/sync/sync.routes.js';
 import { wsRoutes } from './modules/websocket/ws.routes.js';
 import { startLiveScoresWorker, scheduleLiveScoresJob, stopLiveScoresWorker } from './modules/sync/live-scores.job.js';
+import { startUpcomingWorker, scheduleUpcomingJob, stopUpcomingWorker } from './modules/sync/upcoming-matches.job.js';
 import { stopRedisSubscriber } from './modules/websocket/redis-subscriber.js';
 import { getRedis, closeRedis } from './config/redis.js';
 import websocketPlugin from '@fastify/websocket';
@@ -55,6 +56,7 @@ export async function buildApp() {
   fastify.decorate('prisma', prisma);
   fastify.addHook('onClose', async () => {
     await stopLiveScoresWorker();
+    await stopUpcomingWorker();
     await stopRedisSubscriber();
     await prisma.$disconnect();
     await closeRedis();
@@ -66,8 +68,12 @@ export async function buildApp() {
   // Start BullMQ live-scores worker and schedule repeatable job
   if (env.NODE_ENV !== 'test') {
     startLiveScoresWorker(prisma);
+    startUpcomingWorker(prisma);
     scheduleLiveScoresJob().catch((err) =>
       fastify.log.error('[LiveScores] schedule error:', err),
+    );
+    scheduleUpcomingJob().catch((err) =>
+      fastify.log.error('[Upcoming] schedule error:', err),
     );
   }
 

@@ -11,6 +11,7 @@ import '../../features/pool/screens/create_pool_screen.dart';
 import '../../features/pool/screens/pool_detail_screen.dart';
 import '../../features/pool/screens/join_pool_screen.dart';
 import '../../features/predictions/screens/live_match_screen.dart';
+import '../../features/profile/screens/profile_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authAsync = ref.watch(authProvider);
@@ -77,6 +78,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           inviteCode: state.pathParameters['code']!,
         ),
       ),
+      GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
     ],
     errorBuilder: (context, state) => Scaffold(
       body: Center(child: Text('Página não encontrada: ${state.error}')),
