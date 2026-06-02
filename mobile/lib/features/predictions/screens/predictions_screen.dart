@@ -147,7 +147,7 @@ class _PredictionCardState extends ConsumerState<_PredictionCard> {
     final isFinished = match.status == MatchStatus.finished;
 
     return AppCard(
-        borderColor: isLive ? AppColors.liveBadge : null,
+        borderColor: isLive ? AppColors.error : null,
         onTap: (isLive || isFinished)
             ? () => context.push(
                   '/pool/${widget.pool.id}/match/${match.id}',
@@ -205,7 +205,7 @@ class _PredictionCardState extends ConsumerState<_PredictionCard> {
                             child: Text(
                               '×',
                               style: AppTextStyles.teamName.copyWith(
-                                color: AppColors.mutedText,
+                                color: AppColors.onSurfaceVariant,
                                 fontWeight: FontWeight.w400,
                               ),
                             ),
@@ -259,24 +259,24 @@ class _ScoreInput extends StatelessWidget {
         onChanged: onChanged,
         style: AppTextStyles.scoreLg.copyWith(
           fontSize: 24,
-          color: enabled ? AppColors.amber : AppColors.mutedText,
+          color: enabled ? AppColors.secondary : AppColors.onSurfaceVariant,
         ),
         decoration: InputDecoration(
           counterText: '',
           contentPadding: EdgeInsets.zero,
           filled: true,
-          fillColor: enabled ? AppColors.greenMid : AppColors.green,
+          fillColor: enabled ? AppColors.surfaceContainerHighest : AppColors.surfaceContainerHigh,
           enabledBorder: const OutlineInputBorder(
             borderRadius: AppSpacing.inputRadius,
-            borderSide: BorderSide(color: AppColors.greenLight),
+            borderSide: BorderSide(color: AppColors.outlineVariant),
           ),
           focusedBorder: const OutlineInputBorder(
             borderRadius: AppSpacing.inputRadius,
-            borderSide: BorderSide(color: AppColors.amber, width: 2),
+            borderSide: BorderSide(color: AppColors.primary, width: 2),
           ),
           disabledBorder: const OutlineInputBorder(
             borderRadius: AppSpacing.inputRadius,
-            borderSide: BorderSide(color: AppColors.greenLight),
+            borderSide: BorderSide(color: AppColors.outlineVariant),
           ),
         ),
       ),
@@ -292,8 +292,8 @@ class _PredictionRecap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pointColor = prediction.pointsEarned >= 3
-        ? AppColors.exactColor
-        : AppColors.winColor;
+        ? AppColors.secondary
+        : AppColors.primary;
 
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -343,7 +343,7 @@ class _SaveIndicator extends StatelessWidget {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.lock_outline, size: 12, color: AppColors.mutedText),
+          const Icon(Icons.lock_outline, size: 12, color: AppColors.onSurfaceVariant),
           const SizedBox(width: 4),
           Text('encerrado', style: AppTextStyles.micro),
         ],
@@ -359,7 +359,7 @@ class _SaveIndicator extends StatelessWidget {
               height: 10,
               child: CircularProgressIndicator(
                 strokeWidth: 1.5,
-                color: AppColors.amberLight,
+                color: AppColors.secondary,
               ),
             ),
             const SizedBox(width: 4),
@@ -370,22 +370,22 @@ class _SaveIndicator extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.check_circle_outline,
-                size: 12, color: AppColors.winColor),
+                size: 12, color: AppColors.primary),
             const SizedBox(width: 4),
             Text(
               'palpite salvo',
-              style: AppTextStyles.micro.copyWith(color: AppColors.winColor),
+              style: AppTextStyles.micro.copyWith(color: AppColors.primary),
             ),
           ],
         ),
       _SaveState.error => Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 12, color: AppColors.liveBadge),
+            const Icon(Icons.error_outline, size: 12, color: AppColors.error),
             const SizedBox(width: 4),
             Text(
               'erro',
-              style: AppTextStyles.micro.copyWith(color: AppColors.liveBadge),
+              style: AppTextStyles.micro.copyWith(color: AppColors.error),
             ),
           ],
         ),

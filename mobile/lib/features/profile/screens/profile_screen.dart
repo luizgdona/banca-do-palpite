@@ -19,9 +19,9 @@ class ProfileScreen extends ConsumerWidget {
     final user = authState?.user;
 
     return Scaffold(
-      backgroundColor: AppColors.cream,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.green,
+        backgroundColor: AppColors.surfaceContainerLow,
         title: const Text('PERFIL'),
       ),
       body: user == null
@@ -48,7 +48,7 @@ class ProfileScreen extends ConsumerWidget {
                 _SettingsTile(
                   icon: Icons.logout,
                   label: 'Sair',
-                  color: AppColors.liveBadge,
+                  color: AppColors.error,
                   onTap: () => _confirmLogout(context, ref),
                 ),
                 AppSpacing.gapXxl,
@@ -73,21 +73,21 @@ class ProfileScreen extends ConsumerWidget {
     final result = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.green,
+        backgroundColor: AppColors.surfaceContainerHigh,
         title: Text(
           'EDITAR PERFIL',
           style: AppTextStyles.sectionTitle.copyWith(
             fontSize: 20,
-            color: AppColors.amber,
+            color: AppColors.secondary,
           ),
         ),
         content: TextField(
           controller: nameCtrl,
-          style: AppTextStyles.bodyMd.copyWith(color: AppColors.offWhite),
+          style: AppTextStyles.bodyMd.copyWith(color: AppColors.onSurface),
           decoration: InputDecoration(
             labelText: 'Nome',
             filled: true,
-            fillColor: AppColors.greenMid,
+            fillColor: AppColors.surfaceContainerHighest,
             border: const OutlineInputBorder(
               borderRadius: AppSpacing.inputRadius,
             ),
@@ -127,17 +127,17 @@ class ProfileScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.green,
+        backgroundColor: AppColors.surfaceContainerHigh,
         title: Text(
           'SAIR',
           style: AppTextStyles.sectionTitle.copyWith(
             fontSize: 20,
-            color: AppColors.liveBadge,
+            color: AppColors.error,
           ),
         ),
         content: Text(
           'Tem certeza que deseja sair?',
-          style: AppTextStyles.bodyMd.copyWith(color: AppColors.offWhite),
+          style: AppTextStyles.bodyMd.copyWith(color: AppColors.onSurface),
         ),
         actions: [
           TextButton(
@@ -146,7 +146,7 @@ class ProfileScreen extends ConsumerWidget {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.liveBadge),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             child: const Text('SAIR'),
           ),
         ],
@@ -166,7 +166,7 @@ class _ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.green,
+      color: AppColors.surfaceContainerLow,
       padding: const EdgeInsets.symmetric(
           vertical: AppSpacing.xxl, horizontal: AppSpacing.xl),
       child: Row(
@@ -174,8 +174,8 @@ class _ProfileHeader extends StatelessWidget {
           AppAvatar(
             name: user.name,
             radius: 36,
-            backgroundColor: AppColors.amber,
-            textColor: AppColors.green,
+            backgroundColor: AppColors.secondary,
+            textColor: AppColors.background,
           ),
           AppSpacing.gapLg,
           Expanded(
@@ -186,7 +186,7 @@ class _ProfileHeader extends StatelessWidget {
                   user.name,
                   style: AppTextStyles.screenTitle.copyWith(
                     fontSize: 26,
-                    color: AppColors.offWhite,
+                    color: AppColors.onSurface,
                   ),
                 ),
                 Text(user.email, style: AppTextStyles.bodySm),
@@ -197,15 +197,15 @@ class _ProfileHeader extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.sm, vertical: AppSpacing.xs / 2),
                       decoration: BoxDecoration(
-                        color: AppColors.amber.withAlpha(30),
+                        color: AppColors.secondary.withAlpha(30),
                         borderRadius: AppSpacing.badgeRadius,
                         border: Border.all(
-                            color: AppColors.amber.withAlpha(80)),
+                            color: AppColors.secondary.withAlpha(80)),
                       ),
                       child: Text(
                         user.provider.toUpperCase(),
                         style: AppTextStyles.badgeLabel.copyWith(
-                          color: AppColors.amber,
+                          color: AppColors.secondary,
                         ),
                       ),
                     ),
@@ -234,7 +234,7 @@ class _SettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = color ?? AppColors.darkText;
+    final c = color ?? AppColors.onSurface;
     return ListTile(
       leading: Icon(icon, color: c),
       title: Text(
@@ -244,7 +244,7 @@ class _SettingsTile extends StatelessWidget {
           color: c,
         ),
       ),
-      trailing: const Icon(Icons.chevron_right, color: AppColors.mutedDark),
+      trailing: const Icon(Icons.chevron_right, color: AppColors.onSurfaceVariant),
       onTap: onTap,
     );
   }

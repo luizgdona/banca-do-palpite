@@ -30,7 +30,7 @@ class PoolDetailScreen extends ConsumerWidget {
     return poolAsync.when(
       loading: () => const AppLoadingScaffold(),
       error: (e, _) => Scaffold(
-        backgroundColor: AppColors.cream,
+        backgroundColor: AppColors.background,
         body: Center(child: Text(e.toString())),
       ),
       data: (pool) => _PoolDetailView(pool: pool),
@@ -154,72 +154,6 @@ class _PoolDetailViewState extends ConsumerState<_PoolDetailView>
   }
 }
 
-// ── Aba Membros (mantida) ─────────────────────────────────────────────────────
-
-class _MatchCard extends StatelessWidget {
-  final MatchModel match;
-  final PoolModel pool;
-
-  const _MatchCard({required this.match, required this.pool});
-
-  @override
-  Widget build(BuildContext context) {
-    final isLive = match.status == MatchStatus.live;
-    final isFinished = match.status == MatchStatus.finished;
-
-    return AppCard(
-      borderColor: isLive ? AppColors.liveBadge : null,
-      onTap: (isLive || isFinished)
-          ? () => Navigator.of(context).pushNamed(
-                '/pool/${match.id}',
-              )
-          : null,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.base, AppSpacing.md,
-          AppSpacing.base, AppSpacing.base,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Status row — fixed height keeps card proportions stable ──
-            SizedBox(
-              height: 22,
-              child: Row(
-                children: [
-                  if (isLive)
-                    AppLiveBadge(minute: match.minute)
-                  else
-                    Text(
-                      _formatDate(match.scheduledAt),
-                      style: AppTextStyles.micro,
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            // ── Teams row — fixed-width center prevents shifting ──
-            MatchTeamsRow(
-              homeTeam: match.homeTeam.name,
-              awayTeam: match.awayTeam.name,
-              center: (isLive || isFinished)
-                  ? MatchScoreDisplay(
-                      home: match.homeScore ?? 0,
-                      away: match.awayScore ?? 0,
-                    )
-                  : const MatchSeparator(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _formatDate(DateTime dt) {
-    return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}  ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-  }
-}
-
 // ── Aba Membros ───────────────────────────────────────────────────────────────
 
 class _MembersTab extends ConsumerWidget {
@@ -248,7 +182,7 @@ class _MembersTab extends ConsumerWidget {
             return ListTile(
               leading: AppAvatar(
                 name: user['name'] as String,
-                backgroundColor: AppColors.greenMid,
+                backgroundColor: AppColors.surfaceContainerHighest,
               ),
               title: Text(
                 user['name'] as String,
@@ -258,7 +192,7 @@ class _MembersTab extends ConsumerWidget {
                 '${m['totalPoints'] ?? 0} pts',
                 style: AppTextStyles.tabLabel.copyWith(
                   fontSize: 16,
-                  color: AppColors.green,
+                  color: AppColors.primary,
                 ),
               ),
             );
@@ -345,8 +279,8 @@ class _InviteSheet extends StatelessWidget {
                     icon: const Icon(Icons.copy, size: 18),
                     label: const Text('COPIAR LINK'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.offWhite,
-                      side: const BorderSide(color: AppColors.mutedText),
+                      foregroundColor: AppColors.onSurface,
+                      side: const BorderSide(color: AppColors.outlineVariant),
                     ),
                   ),
                 ),

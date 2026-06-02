@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_text_styles.dart';
 
 /// Pulsing "AO VIVO" badge — matches the Stitch live indicator style.
 class AppLiveBadge extends StatefulWidget {

@@ -14,9 +14,9 @@ class NotificationSettingsScreen extends ConsumerWidget {
     final prefsAsync = ref.watch(notificationPrefsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.cream,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.green,
+        backgroundColor: AppColors.surfaceContainerLow,
         title: const Text('NOTIFICAÇÕES'),
       ),
       body: prefsAsync.when(
@@ -97,7 +97,7 @@ class _SectionHeader extends StatelessWidget {
         style: AppTextStyles.micro.copyWith(
           fontWeight: FontWeight.w700,
           letterSpacing: 1.5,
-          color: AppColors.mutedDark,
+          color: AppColors.onSurfaceVariant,
         ),
       ),
     );
@@ -131,8 +131,8 @@ class _NotifTile extends StatelessWidget {
       ),
       subtitle: Text(subtitle, style: AppTextStyles.caption),
       value: value,
-      activeColor: AppColors.amber,
-      activeTrackColor: AppColors.amber.withAlpha(80),
+      activeColor: AppColors.secondary,
+      activeTrackColor: AppColors.secondary.withAlpha(80),
       onChanged: (v) =>
           ref.read(notificationPrefsProvider.notifier).toggle(prefKey, v),
     );

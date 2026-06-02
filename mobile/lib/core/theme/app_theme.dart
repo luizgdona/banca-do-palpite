@@ -128,7 +128,7 @@ class AppTheme {
       ),
 
       // ── Card ──────────────────────────────────────────────────────────────
-      cardTheme: const CardThemeData(
+      cardTheme: const CardTheme(
         color: AppColors.surfaceContainerHigh,
         elevation: 0,
         margin: EdgeInsets.zero,
@@ -203,7 +203,7 @@ class AppTheme {
       ),
 
       // ── Tab Bar ───────────────────────────────────────────────────────────
-      tabBarTheme: TabBarThemeData(
+      tabBarTheme: TabBarTheme(
         indicatorColor: AppColors.primary,
         indicatorSize: TabBarIndicatorSize.tab,
         labelColor: AppColors.primary,

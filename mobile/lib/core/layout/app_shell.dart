@@ -6,25 +6,64 @@ import '../theme/app_spacing.dart';
 import '../widgets/bdp_logo.dart';
 
 /// Shell that wraps all authenticated screens with:
-/// - Sidebar navigation on desktop (≥ 768px)
-/// - Bottom navigation bar on mobile (< 768px)
+/// - Sidebar navigation on desktop (≥ 768px)  — always visible
+/// - Top app bar + Bottom nav bar on mobile  (<  768px)
+/// - Content is constrained to 1100px max-width on very large screens
 class AppShell extends StatelessWidget {
   final Widget child;
 
   const AppShell({super.key, required this.child});
 
+  static const double _breakpoint = 768;
+  static const double _maxContentWidth = 1100;
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
-    final isDesktop = width >= 768;
+    final isDesktop = width >= _breakpoint;
     final location = GoRouterState.of(context).uri.toString();
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      // ── Mobile top bar (logo + actions) ─────────────────────────────────────
+      appBar: isDesktop
+          ? null
+          : AppBar(
+              backgroundColor: AppColors.surfaceContainerLow,
+              elevation: 0,
+              automaticallyImplyLeading: false,
+              title: const BdpLogoCompact(fontSize: 20),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.notifications_outlined,
+                      color: AppColors.primary),
+                  onPressed: () {},
+                ),
+                IconButton(
+                  icon: const Icon(Icons.account_circle_outlined,
+                      color: AppColors.primary),
+                  onPressed: () => GoRouter.of(context).push('/profile'),
+                ),
+                const SizedBox(width: AppSpacing.xs),
+              ],
+            ),
       body: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── Desktop sidebar ──────────────────────────────────────────────────
           if (isDesktop) _Sidebar(location: location),
-          Expanded(child: child),
+          // ── Main content with max-width on very large screens ────────────────
+          Expanded(
+            child: isDesktop
+                ? Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                          maxWidth: _maxContentWidth),
+                      child: child,
+                    ),
+                  )
+                : child,
+          ),
         ],
       ),
       bottomNavigationBar: isDesktop ? null : _BottomNav(location: location),
@@ -47,7 +86,7 @@ class _Sidebar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ── Brand ───────────────────────────────────────────────────────────
-          const SizedBox(height: 24),
+          const SizedBox(height: 28),
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.base,
@@ -55,7 +94,7 @@ class _Sidebar extends StatelessWidget {
             ),
             child: const BdpLogoCompact(fontSize: 20),
           ),
-          const SizedBox(height: AppSpacing.md),
+          const SizedBox(height: AppSpacing.base),
           // ── Pool label ──────────────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base),
@@ -107,13 +146,41 @@ class _Sidebar extends StatelessWidget {
             location: location,
           ),
           const Spacer(),
+          // ── User actions ─────────────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base),
+            child: Row(
+              children: [
+                const Icon(Icons.account_circle_outlined,
+                    color: AppColors.onSurfaceVariant, size: 20),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    'Meu perfil',
+                    style: GoogleFonts.workSans(
+                      fontSize: 13,
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.notifications_outlined,
+                      color: AppColors.onSurfaceVariant, size: 18),
+                  onPressed: () {},
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.base),
           // ── CTA ─────────────────────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.all(AppSpacing.base),
             child: _GradientButton(
               label: 'Novo Palpite',
               icon: Icons.add,
-              onTap: () => context.push('/pool/create'),
+              onTap: () => GoRouter.of(context).push('/pool/create'),
             ),
           ),
           const SizedBox(height: AppSpacing.md),
@@ -149,7 +216,7 @@ class _NavItem extends StatelessWidget {
         border: Border(
           left: BorderSide(
             color: _active ? AppColors.primary : Colors.transparent,
-            width: 4,
+            width: 3,
           ),
         ),
       ),
@@ -157,12 +224,12 @@ class _NavItem extends StatelessWidget {
         leading: Icon(
           _active ? iconFilled : icon,
           color: _active ? AppColors.primary : AppColors.onSurfaceVariant,
-          size: 22,
+          size: 20,
         ),
         title: Text(
           label,
           style: GoogleFonts.workSans(
-            fontSize: 14,
+            fontSize: 13,
             fontWeight: _active ? FontWeight.w600 : FontWeight.w400,
             color: _active ? AppColors.primary : AppColors.onSurfaceVariant,
           ),
@@ -171,8 +238,9 @@ class _NavItem extends StatelessWidget {
           horizontal: AppSpacing.base,
           vertical: 2,
         ),
-        onTap: () => context.go(route),
+        onTap: () => GoRouter.of(context).go(route),
         dense: true,
+        visualDensity: VisualDensity.compact,
       ),
     );
   }
@@ -200,17 +268,18 @@ class _BottomNav extends StatelessWidget {
           top: BorderSide(color: AppColors.outlineVariant, width: 0.5),
         ),
       ),
-      child: Row(
-        children: [
-          for (final item in items) ...[
-            Expanded(
-              child: _BottomNavItem(
-                item: item,
-                active: location.startsWith(item.route),
-              ),
-            ),
-          ],
-        ],
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: items
+              .map((item) => Expanded(
+                    child: _BottomNavItem(
+                      item: item,
+                      active: location.startsWith(item.route),
+                    ),
+                  ))
+              .toList(),
+        ),
       ),
     );
   }
@@ -231,9 +300,9 @@ class _BottomNavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.go(item.route),
-      child: Container(
-        color: Colors.transparent,
+      behavior: HitTestBehavior.opaque,
+      onTap: () => GoRouter.of(context).go(item.route),
+      child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -291,12 +360,12 @@ class _GradientButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: AppColors.onPrimary, size: 18),
+            Icon(icon, color: AppColors.onPrimary, size: 16),
             const SizedBox(width: AppSpacing.sm),
             Text(
               label,
               style: GoogleFonts.workSans(
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.w700,
                 color: AppColors.onPrimary,
               ),

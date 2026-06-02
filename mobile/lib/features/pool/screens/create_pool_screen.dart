@@ -95,12 +95,12 @@ class _CreatePoolScreenState extends ConsumerState<CreatePoolScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.cream,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.green,
+        backgroundColor: AppColors.surfaceContainerLow,
         title: const Text('CRIAR BOLÃO'),
         leading: BackButton(
-          color: AppColors.offWhite,
+          color: AppColors.primary,
           onPressed: () =>
               _step == 0 ? context.pop() : setState(() => _step--),
         ),
@@ -166,7 +166,7 @@ class _StepperBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.green,
+      color: AppColors.surfaceContainerLow,
       padding: const EdgeInsets.fromLTRB(
           AppSpacing.base, 0, AppSpacing.base, AppSpacing.base),
       child: Row(
@@ -179,10 +179,10 @@ class _StepperBar extends StatelessWidget {
               height: 4,
               decoration: BoxDecoration(
                 color: done
-                    ? AppColors.amber
+                    ? AppColors.secondary
                     : active
-                        ? AppColors.amberLight
-                        : AppColors.greenLight,
+                        ? AppColors.secondary
+                        : AppColors.onSurfaceVariant,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -269,18 +269,18 @@ class _StepCompetition extends StatelessWidget {
             child: Container(
               padding: AppSpacing.cardPadding,
               decoration: BoxDecoration(
-                color: selected != null ? AppColors.green : AppColors.inputFill,
+                color: selected != null ? AppColors.surfaceContainerHigh : AppColors.background,
                 borderRadius: AppSpacing.cardRadius,
                 border: Border.all(
                   color:
-                      selected != null ? AppColors.amber : AppColors.divider,
+                      selected != null ? AppColors.secondary : AppColors.outlineVariant,
                   width: 1.5,
                 ),
               ),
               child: selected == null
                   ? Row(
                       children: [
-                        const Icon(Icons.search, color: AppColors.mutedDark),
+                        const Icon(Icons.search, color: AppColors.onSurfaceVariant),
                         AppSpacing.gapMdH,
                         Text('Buscar competição...',
                             style: AppTextStyles.bodySm),
@@ -295,12 +295,12 @@ class _StepCompetition extends StatelessWidget {
                             height: 32,
                             errorWidget: (_, __, ___) => const Icon(
                               Icons.emoji_events_outlined,
-                              color: AppColors.amber,
+                              color: AppColors.secondary,
                             ),
                           )
                         else
                           const Icon(Icons.emoji_events_outlined,
-                              color: AppColors.amber),
+                              color: AppColors.secondary),
                         AppSpacing.gapMdH,
                         Expanded(
                           child: Column(
@@ -316,7 +316,7 @@ class _StepCompetition extends StatelessWidget {
                           ),
                         ),
                         const Icon(Icons.edit_outlined,
-                            color: AppColors.amberLight, size: 18),
+                            color: AppColors.secondary, size: 18),
                       ],
                     ),
             ),
@@ -365,14 +365,14 @@ class _StepMatches extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.sm + 2, vertical: AppSpacing.xs),
                   decoration: BoxDecoration(
-                    color: AppColors.amber,
+                    color: AppColors.secondary,
                     borderRadius: AppSpacing.chipRadius,
                   ),
                   child: Text(
                     '${selected.length} selecionados',
                     style: AppTextStyles.caption.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: AppColors.green,
+                      color: AppColors.background,
                     ),
                   ),
                 ),
@@ -404,13 +404,13 @@ class _StepMatches extends StatelessWidget {
                     padding: const EdgeInsets.all(AppSpacing.md),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppColors.green
-                          : AppColors.inputFill,
+                          ? AppColors.surfaceContainerHigh
+                          : AppColors.background,
                       borderRadius: AppSpacing.inputRadius,
                       border: Border.all(
                         color: isSelected
-                            ? AppColors.amber
-                            : AppColors.divider,
+                            ? AppColors.secondary
+                            : AppColors.outlineVariant,
                         width: 1.5,
                       ),
                     ),
@@ -422,8 +422,8 @@ class _StepMatches extends StatelessWidget {
                             style: AppTextStyles.tabLabel.copyWith(
                               fontSize: 16,
                               color: isSelected
-                                  ? AppColors.offWhite
-                                  : AppColors.darkText,
+                                  ? AppColors.onSurface
+                                  : AppColors.onSurface,
                             ),
                           ),
                         ),
@@ -432,8 +432,8 @@ class _StepMatches extends StatelessWidget {
                           _formatDate(match.scheduledAt),
                           style: AppTextStyles.caption.copyWith(
                             color: isSelected
-                                ? AppColors.mutedText
-                                : AppColors.mutedDark,
+                                ? AppColors.onSurfaceVariant
+                                : AppColors.onSurfaceVariant,
                           ),
                         ),
                         AppSpacing.gapSmH,
@@ -442,8 +442,8 @@ class _StepMatches extends StatelessWidget {
                               ? Icons.check_circle
                               : Icons.circle_outlined,
                           color: isSelected
-                              ? AppColors.amber
-                              : AppColors.mutedDark,
+                              ? AppColors.secondary
+                              : AppColors.onSurfaceVariant,
                           size: 20,
                         ),
                       ],
@@ -507,7 +507,7 @@ class _StepScoring extends StatelessWidget {
           Container(
             padding: AppSpacing.cardPadding,
             decoration: BoxDecoration(
-              color: AppColors.green,
+              color: AppColors.surfaceContainerHigh,
               borderRadius: AppSpacing.cardRadius,
             ),
             child: Column(
@@ -517,7 +517,7 @@ class _StepScoring extends StatelessWidget {
                   name,
                   style: AppTextStyles.sectionTitle.copyWith(
                     fontSize: 20,
-                    color: AppColors.amber,
+                    color: AppColors.secondary,
                   ),
                 ),
                 Text(
@@ -535,7 +535,7 @@ class _StepScoring extends StatelessWidget {
             min: 1,
             max: 10,
             onChanged: onExactChanged,
-            color: AppColors.exactColor,
+            color: AppColors.secondary,
           ),
           AppSpacing.gapBase,
           _ScoringSlider(
@@ -545,7 +545,7 @@ class _StepScoring extends StatelessWidget {
             min: 0,
             max: 10,
             onChanged: onResultChanged,
-            color: AppColors.winColor,
+            color: AppColors.primary,
           ),
           AppSpacing.gapXxl,
           ElevatedButton(
@@ -555,7 +555,7 @@ class _StepScoring extends StatelessWidget {
                     height: 20,
                     width: 20,
                     child: CircularProgressIndicator(
-                        strokeWidth: 2, color: AppColors.green),
+                        strokeWidth: 2, color: AppColors.primary),
                   )
                 : const Text('CRIAR BOLÃO'),
           ),

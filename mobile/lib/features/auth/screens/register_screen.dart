@@ -52,11 +52,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final isLoading = ref.watch(authProvider).isLoading;
 
     return Scaffold(
-      backgroundColor: AppColors.cream,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.green,
+        backgroundColor: AppColors.surfaceContainerLow,
         leading: BackButton(
-          color: AppColors.offWhite,
+          color: AppColors.primary,
           onPressed: () => context.pop(),
         ),
         title: const Text('CRIAR CONTA'),
@@ -84,7 +84,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Nome',
                   prefixIcon:
-                      Icon(Icons.person_outline, color: AppColors.greenLight),
+                      Icon(Icons.person_outline, color: AppColors.onSurfaceVariant),
                 ),
                 validator: (v) =>
                     v == null || v.trim().length < 2 ? 'Nome muito curto' : null,
@@ -96,7 +96,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Email',
                   prefixIcon:
-                      Icon(Icons.email_outlined, color: AppColors.greenLight),
+                      Icon(Icons.email_outlined, color: AppColors.onSurfaceVariant),
                 ),
                 validator: (v) =>
                     v == null || !v.contains('@') ? 'Email inválido' : null,
@@ -108,13 +108,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 decoration: InputDecoration(
                   labelText: 'Senha',
                   prefixIcon: const Icon(Icons.lock_outline,
-                      color: AppColors.greenLight),
+                      color: AppColors.onSurfaceVariant),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscure
                           ? Icons.visibility_outlined
                           : Icons.visibility_off_outlined,
-                      color: AppColors.mutedDark,
+                      color: AppColors.onSurfaceVariant,
                     ),
                     onPressed: () => setState(() => _obscure = !_obscure),
                   ),
@@ -133,7 +133,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         width: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: AppColors.green,
+                          color: AppColors.primary,
                         ),
                       )
                     : const Text('CRIAR CONTA'),
@@ -148,7 +148,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     child: Text(
                       'Entrar',
                       style: AppTextStyles.bodyMd.copyWith(
-                        color: AppColors.amber,
+                        color: AppColors.secondary,
                         fontWeight: FontWeight.w700,
                       ),
                     ),

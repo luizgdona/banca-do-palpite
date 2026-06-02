@@ -33,28 +33,28 @@ class _SearchCompetitionsScreenState
         ref.watch(competitionsProvider(_query.isEmpty ? null : _query));
 
     return Scaffold(
-      backgroundColor: AppColors.cream,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('ESCOLHER COMPETIÇÃO'),
-        backgroundColor: AppColors.green,
+        backgroundColor: AppColors.surfaceContainerLow,
       ),
       body: Column(
         children: [
           Container(
-            color: AppColors.green,
+            color: AppColors.surfaceContainerLow,
             padding: const EdgeInsets.fromLTRB(
                 AppSpacing.base, 0, AppSpacing.base, AppSpacing.base),
             child: TextField(
               controller: _searchCtrl,
-              style: AppTextStyles.bodyMd.copyWith(color: AppColors.offWhite),
+              style: AppTextStyles.bodyMd.copyWith(color: AppColors.onSurface),
               decoration: InputDecoration(
                 hintText: 'Buscar competição...',
                 hintStyle:
-                    AppTextStyles.bodyMd.copyWith(color: AppColors.mutedText),
+                    AppTextStyles.bodyMd.copyWith(color: AppColors.onSurfaceVariant),
                 prefixIcon:
-                    const Icon(Icons.search, color: AppColors.mutedText),
+                    const Icon(Icons.search, color: AppColors.onSurfaceVariant),
                 filled: true,
-                fillColor: AppColors.greenMid,
+                fillColor: AppColors.surfaceContainerHighest,
                 border: const OutlineInputBorder(
                   borderRadius: AppSpacing.inputRadius,
                   borderSide: BorderSide.none,
@@ -65,7 +65,7 @@ class _SearchCompetitionsScreenState
                 ),
                 focusedBorder: const OutlineInputBorder(
                   borderRadius: AppSpacing.inputRadius,
-                  borderSide: BorderSide(color: AppColors.amber, width: 2),
+                  borderSide: BorderSide(color: AppColors.primary, width: 2),
                 ),
               ),
               onChanged: (v) {
@@ -110,7 +110,7 @@ class _CompetitionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: AppColors.green,
+      color: AppColors.surfaceContainerHigh,
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: ListTile(
         onTap: () => Navigator.of(context).pop(competition),
@@ -121,16 +121,16 @@ class _CompetitionTile extends StatelessWidget {
                 height: 36,
                 errorWidget: (_, __, ___) => const Icon(
                   Icons.emoji_events_outlined,
-                  color: AppColors.amber,
+                  color: AppColors.secondary,
                 ),
               )
-            : const Icon(Icons.emoji_events_outlined, color: AppColors.amber),
+            : const Icon(Icons.emoji_events_outlined, color: AppColors.secondary),
         title: Text(competition.name, style: AppTextStyles.cardTitle),
         subtitle: Text(
           '${competition.country ?? ''} • ${competition.season ?? ''}',
           style: AppTextStyles.caption,
         ),
-        trailing: const Icon(Icons.chevron_right, color: AppColors.mutedText),
+        trailing: const Icon(Icons.chevron_right, color: AppColors.onSurfaceVariant),
       ),
     );
   }

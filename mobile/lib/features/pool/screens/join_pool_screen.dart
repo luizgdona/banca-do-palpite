@@ -45,9 +45,9 @@ class _JoinPoolScreenState extends ConsumerState<JoinPoolScreen> {
     final previewAsync = ref.watch(poolPreviewProvider(widget.inviteCode));
 
     return Scaffold(
-      backgroundColor: AppColors.cream,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.green,
+        backgroundColor: AppColors.surfaceContainerLow,
         title: const Text('ENTRAR NO BOLÃO'),
       ),
       body: previewAsync.when(
@@ -59,7 +59,7 @@ class _JoinPoolScreenState extends ConsumerState<JoinPoolScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(Icons.error_outline,
-                    color: AppColors.liveBadge, size: 48),
+                    color: AppColors.error, size: 48),
                 AppSpacing.gapBase,
                 Text(
                   'Código de convite inválido',
@@ -78,7 +78,7 @@ class _JoinPoolScreenState extends ConsumerState<JoinPoolScreen> {
               Container(
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 decoration: BoxDecoration(
-                  color: AppColors.green,
+                  color: AppColors.surfaceContainerHigh,
                   borderRadius: AppSpacing.cardRadius,
                 ),
                 child: Column(
@@ -91,20 +91,20 @@ class _JoinPoolScreenState extends ConsumerState<JoinPoolScreen> {
                         height: 40,
                         errorWidget: (_, __, ___) => const Icon(
                             Icons.emoji_events_outlined,
-                            color: AppColors.amber),
+                            color: AppColors.secondary),
                       ),
                     AppSpacing.gapMd,
                     Text(
                       preview.name,
                       style: AppTextStyles.screenTitle.copyWith(
-                        color: AppColors.amber,
+                        color: AppColors.secondary,
                       ),
                     ),
                     if (preview.competition != null)
                       Text(
                         preview.competition!.name,
                         style: AppTextStyles.bodyMd.copyWith(
-                          color: AppColors.mutedText,
+                          color: AppColors.onSurfaceVariant,
                         ),
                       ),
                     AppSpacing.gapBase,
@@ -115,7 +115,7 @@ class _JoinPoolScreenState extends ConsumerState<JoinPoolScreen> {
                         child: Text(
                           preview.description!,
                           style: AppTextStyles.bodyMd.copyWith(
-                            color: AppColors.offWhite,
+                            color: AppColors.onSurface,
                           ),
                         ),
                       ),
@@ -138,14 +138,14 @@ class _JoinPoolScreenState extends ConsumerState<JoinPoolScreen> {
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.liveBadge.withAlpha(30),
+                    color: AppColors.error.withAlpha(30),
                     borderRadius: AppSpacing.inputRadius,
-                    border: Border.all(color: AppColors.liveBadge),
+                    border: Border.all(color: AppColors.error),
                   ),
                   child: Text(
                     'Este bolão não está mais aceitando novos membros.',
                     style: AppTextStyles.bodyMd.copyWith(
-                        color: AppColors.liveBadge),
+                        color: AppColors.error),
                   ),
                 )
               else
@@ -156,7 +156,7 @@ class _JoinPoolScreenState extends ConsumerState<JoinPoolScreen> {
                           height: 20,
                           width: 20,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: AppColors.green),
+                              strokeWidth: 2, color: AppColors.primary),
                         )
                       : const Text('ENTRAR NO BOLÃO'),
                 ),
@@ -178,7 +178,7 @@ class _InfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, color: AppColors.mutedText, size: 16),
+        Icon(icon, color: AppColors.onSurfaceVariant, size: 16),
         AppSpacing.gapXs,
         const SizedBox(width: 2),
         Text(label, style: AppTextStyles.bodySm),

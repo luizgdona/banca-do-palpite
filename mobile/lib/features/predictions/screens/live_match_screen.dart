@@ -28,7 +28,7 @@ class LiveMatchScreen extends ConsumerWidget {
 
     if (match == null) {
       return const Scaffold(
-        backgroundColor: AppColors.cream,
+        backgroundColor: AppColors.background,
         body: Center(child: Text('Jogo não encontrado')),
       );
     }
@@ -38,14 +38,14 @@ class LiveMatchScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      backgroundColor: AppColors.green,
+      backgroundColor: AppColors.surfaceContainerHigh,
       appBar: AppBar(
-        backgroundColor: AppColors.green,
+        backgroundColor: AppColors.surfaceContainerHigh,
         elevation: 0,
-        leading: BackButton(color: AppColors.offWhite),
+        leading: BackButton(color: AppColors.primary),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: AppColors.offWhite),
+            icon: const Icon(Icons.refresh, color: AppColors.onSurfaceVariant),
             onPressed: () => ref.invalidate(
               matchPredictionsProvider((poolId: pool.id, matchId: matchId)),
             ),
@@ -59,7 +59,7 @@ class LiveMatchScreen extends ConsumerWidget {
           Expanded(
             child: Container(
               decoration: const BoxDecoration(
-                color: AppColors.cream,
+                color: AppColors.background,
                 borderRadius: BorderRadius.vertical(
                   top: Radius.circular(AppSpacing.radiusXl),
                 ),
@@ -107,7 +107,7 @@ class _ScoreBoard extends StatelessWidget {
                   match.homeTeam.name,
                   textAlign: TextAlign.center,
                   style: AppTextStyles.sectionTitle.copyWith(
-                    color: AppColors.offWhite,
+                    color: AppColors.onSurface,
                   ),
                 ),
               ),
@@ -127,7 +127,7 @@ class _ScoreBoard extends StatelessWidget {
                       child: Text(
                         '×',
                         style: AppTextStyles.scoreLg.copyWith(
-                          color: AppColors.mutedText,
+                          color: AppColors.onSurfaceVariant,
                         ),
                       ),
                     ),
@@ -143,7 +143,7 @@ class _ScoreBoard extends StatelessWidget {
                   match.awayTeam.name,
                   textAlign: TextAlign.center,
                   style: AppTextStyles.sectionTitle.copyWith(
-                    color: AppColors.offWhite,
+                    color: AppColors.onSurface,
                   ),
                 ),
               ),
@@ -190,7 +190,7 @@ class _PredictionsList extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.sm + 2, vertical: AppSpacing.xs),
                   decoration: BoxDecoration(
-                    color: AppColors.green.withAlpha(20),
+                    color: AppColors.surfaceContainerHigh.withAlpha(20),
                     borderRadius: AppSpacing.chipRadius,
                   ),
                   child: Text(
@@ -209,7 +209,7 @@ class _PredictionsList extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.lock_clock,
-                      size: 40, color: AppColors.mutedDark),
+                      size: 40, color: AppColors.onSurfaceVariant),
                   AppSpacing.gapMd,
                   Text(
                     'Palpites revelados\nquando o jogo começar',
@@ -237,20 +237,20 @@ class _PredictionsList extends StatelessWidget {
                   String badge;
 
                   if (pts == 0 && match.status == MatchStatus.finished) {
-                    cardColor = AppColors.lossColor.withAlpha(20);
-                    badgeColor = AppColors.lossColor;
+                    cardColor = AppColors.outlineVariant.withAlpha(20);
+                    badgeColor = AppColors.outlineVariant;
                     badge = '0 pts';
                   } else if (isExact) {
-                    cardColor = AppColors.exactColor.withAlpha(20);
-                    badgeColor = AppColors.exactColor;
+                    cardColor = AppColors.secondary.withAlpha(20);
+                    badgeColor = AppColors.secondary;
                     badge = '+$pts pts 🎯';
                   } else if (isCorrect) {
-                    cardColor = AppColors.winColor.withAlpha(20);
-                    badgeColor = AppColors.winColor;
+                    cardColor = AppColors.primary.withAlpha(20);
+                    badgeColor = AppColors.primary;
                     badge = '+$pts pts';
                   } else {
-                    cardColor = AppColors.inputFill;
-                    badgeColor = AppColors.mutedDark;
+                    cardColor = AppColors.background;
+                    badgeColor = AppColors.onSurfaceVariant;
                     badge = '${p.homeScore} × ${p.awayScore}';
                   }
 
@@ -278,7 +278,7 @@ class _PredictionsList extends StatelessWidget {
                           '${p.homeScore} × ${p.awayScore}',
                           style: AppTextStyles.teamName.copyWith(
                             fontSize: 18,
-                            color: AppColors.darkText,
+                            color: AppColors.onSurface,
                           ),
                         ),
                         AppSpacing.gapSmH,
