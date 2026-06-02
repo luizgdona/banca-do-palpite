@@ -11,8 +11,10 @@ import '../../../core/providers/realtime_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_live_badge.dart';
 import '../../../core/widgets/app_loading.dart';
+import '../../../core/widgets/match_teams_row.dart';
 
 class PredictionsScreen extends ConsumerStatefulWidget {
   final PoolModel pool;
@@ -144,109 +146,84 @@ class _PredictionCardState extends ConsumerState<_PredictionCard> {
     final isLive = match.status == MatchStatus.live;
     final isFinished = match.status == MatchStatus.finished;
 
-    return GestureDetector(
-      onTap: (isLive || isFinished)
-          ? () => context.push(
-                '/pool/${widget.pool.id}/match/${match.id}',
-                extra: widget.pool,
-              )
-          : null,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: AppSpacing.sm + 2),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [AppColors.green, AppColors.greenDark],
+    return AppCard(
+        borderColor: isLive ? AppColors.liveBadge : null,
+        onTap: (isLive || isFinished)
+            ? () => context.push(
+                  '/pool/${widget.pool.id}/match/${match.id}',
+                  extra: widget.pool,
+                )
+            : null,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.base, AppSpacing.md,
+            AppSpacing.base, AppSpacing.base,
           ),
-          borderRadius: AppSpacing.cardRadius,
-          border: isLive ? Border.all(color: AppColors.liveBadge, width: 1.5) : null,
-          boxShadow: AppSpacing.subtleShadow,
-        ),
-        child: Column(
-          children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.base, AppSpacing.md, AppSpacing.base, 0),
-              child: Row(
-                children: [
-                  if (isLive)
-                    AppLiveBadge(minute: match.minute)
-                  else
-                    Text(
-                      _formatTime(match.scheduledAt),
-                      style: AppTextStyles.micro,
-                    ),
-                  const Spacer(),
-                  _SaveIndicator(state: _saveState, locked: locked),
-                ],
-              ),
-            ),
-            // Score row
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.base,
-                vertical: AppSpacing.md,
-              ),
-              child: Row(
-                children: [
-                  // Home team
-                  Expanded(
-                    child: Text(
-                      match.homeTeam.name,
-                      textAlign: TextAlign.right,
-                      style: AppTextStyles.teamName,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  if (isLive || isFinished) ...[
-                    _RealScoreDisplay(
-                      home: match.homeScore ?? 0,
-                      away: match.awayScore ?? 0,
-                    ),
-                  ] else ...[
-                    _ScoreInput(
-                      controller: _homeCtrl,
-                      enabled: !locked,
-                      onChanged: (_) => _onChanged(),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-                      child: Text(
-                        '×',
-                        style: AppTextStyles.sectionTitle.copyWith(
-                          fontSize: 18,
-                          color: AppColors.mutedText,
-                        ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Header — fixed height for stable layout ──
+              SizedBox(
+                height: 22,
+                child: Row(
+                  children: [
+                    if (isLive)
+                      AppLiveBadge(minute: match.minute)
+                    else
+                      Text(
+                        _formatTime(match.scheduledAt),
+                        style: AppTextStyles.micro,
                       ),
-                    ),
-                    _ScoreInput(
-                      controller: _awayCtrl,
-                      enabled: !locked,
-                      onChanged: (_) => _onChanged(),
-                    ),
+                    const Spacer(),
+                    _SaveIndicator(state: _saveState, locked: locked),
                   ],
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(
-                      match.awayTeam.name,
-                      style: AppTextStyles.teamName,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-            // Prediction recap when locked
-            if (locked && widget.prediction != null)
-              _PredictionRecap(prediction: widget.prediction!),
-          ],
+              const SizedBox(height: AppSpacing.sm),
+              // ── Teams row with fixed center ──
+              MatchTeamsRow(
+                homeTeam: match.homeTeam.name,
+                awayTeam: match.awayTeam.name,
+                center: (isLive || isFinished)
+                    ? MatchScoreDisplay(
+                        home: match.homeScore ?? 0,
+                        away: match.awayScore ?? 0,
+                      )
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          _ScoreInput(
+                            controller: _homeCtrl,
+                            enabled: !locked,
+                            onChanged: (_) => _onChanged(),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.xs,
+                            ),
+                            child: Text(
+                              '×',
+                              style: AppTextStyles.teamName.copyWith(
+                                color: AppColors.mutedText,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ),
+                          _ScoreInput(
+                            controller: _awayCtrl,
+                            enabled: !locked,
+                            onChanged: (_) => _onChanged(),
+                          ),
+                        ],
+                      ),
+              ),
+              // ── Prediction recap (locked/finished) ──
+              if (locked && widget.prediction != null)
+                _PredictionRecap(prediction: widget.prediction!),
+            ],
+          ),
         ),
-      ),
     );
   }
 
@@ -307,29 +284,6 @@ class _ScoreInput extends StatelessWidget {
   }
 }
 
-class _RealScoreDisplay extends StatelessWidget {
-  final int home;
-  final int away;
-  const _RealScoreDisplay({required this.home, required this.away});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text('$home', style: AppTextStyles.scoreLg),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs + 2),
-          child: Text(
-            '×',
-            style: AppTextStyles.sectionTitle.copyWith(color: AppColors.mutedText),
-          ),
-        ),
-        Text('$away', style: AppTextStyles.scoreLg),
-      ],
-    );
-  }
-}
 
 class _PredictionRecap extends StatelessWidget {
   final PredictionModel prediction;
@@ -342,8 +296,10 @@ class _PredictionRecap extends StatelessWidget {
         : AppColors.winColor;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(
-          AppSpacing.md, AppSpacing.xs + 2, AppSpacing.md, AppSpacing.sm + 2),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.base,
+        vertical: AppSpacing.sm,
+      ),
       child: Row(
         children: [
           Text(

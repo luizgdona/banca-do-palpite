@@ -8,6 +8,7 @@ import '../../../core/providers/pools_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_loading.dart';
 import '../../../core/widgets/bdp_logo.dart';
 
@@ -207,21 +208,10 @@ class _PoolCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return AppCard(
+      bottomMargin: AppSpacing.md,
       onTap: () => context.push('/pool/${pool.id}'),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: AppSpacing.md),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [AppColors.green, AppColors.greenDark],
-            stops: [0.0, 1.0],
-          ),
-          borderRadius: AppSpacing.cardRadius,
-          boxShadow: AppSpacing.cardShadow,
-        ),
-        child: Padding(
+      child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.base,
             vertical: AppSpacing.md,
@@ -306,7 +296,6 @@ class _PoolCard extends StatelessWidget {
             ],
           ),
         ),
-      ),
     );
   }
 }

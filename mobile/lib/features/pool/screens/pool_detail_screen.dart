@@ -12,8 +12,10 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/app_avatar.dart';
+import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_live_badge.dart';
 import '../../../core/widgets/app_loading.dart';
+import '../../../core/widgets/match_teams_row.dart';
 import '../../predictions/screens/predictions_screen.dart';
 import '../../ranking/screens/ranking_screen.dart';
 
@@ -164,93 +166,47 @@ class _MatchCard extends StatelessWidget {
     final isLive = match.status == MatchStatus.live;
     final isFinished = match.status == MatchStatus.finished;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.sm + 2),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isLive
-              ? [AppColors.green, AppColors.greenDark]
-              : [AppColors.green, AppColors.greenDark],
-        ),
-        borderRadius: AppSpacing.cardRadius,
-        border: isLive
-            ? Border.all(color: AppColors.liveBadge, width: 1.5)
-            : null,
-        boxShadow: AppSpacing.subtleShadow,
-      ),
+    return AppCard(
+      borderColor: isLive ? AppColors.liveBadge : null,
+      onTap: (isLive || isFinished)
+          ? () => Navigator.of(context).pushNamed(
+                '/pool/${match.id}',
+              )
+          : null,
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.base,
-          vertical: AppSpacing.md,
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.base, AppSpacing.md,
+          AppSpacing.base, AppSpacing.base,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Status row
-            Row(
-              children: [
-                if (isLive)
-                  AppLiveBadge(minute: match.minute)
-                else
-                  Text(
-                    _formatDate(match.scheduledAt),
-                    style: AppTextStyles.micro,
-                  ),
-              ],
+            // ── Status row — fixed height keeps card proportions stable ──
+            SizedBox(
+              height: 22,
+              child: Row(
+                children: [
+                  if (isLive)
+                    AppLiveBadge(minute: match.minute)
+                  else
+                    Text(
+                      _formatDate(match.scheduledAt),
+                      style: AppTextStyles.micro,
+                    ),
+                ],
+              ),
             ),
-            const SizedBox(height: AppSpacing.sm + 2),
-            // Teams + score
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    match.homeTeam.name,
-                    textAlign: TextAlign.right,
-                    style: AppTextStyles.teamName,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                  child: (isLive || isFinished)
-                      ? Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text('${match.homeScore ?? 0}',
-                                style: AppTextStyles.scoreMd),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 6),
-                              child: Text(
-                                '×',
-                                style: AppTextStyles.micro.copyWith(
-                                  fontSize: 14,
-                                  color: AppColors.mutedText,
-                                ),
-                              ),
-                            ),
-                            Text('${match.awayScore ?? 0}',
-                                style: AppTextStyles.scoreMd),
-                          ],
-                        )
-                      : Text(
-                          '×',
-                          style: AppTextStyles.sectionTitle
-                              .copyWith(color: AppColors.mutedText),
-                        ),
-                ),
-                Expanded(
-                  child: Text(
-                    match.awayTeam.name,
-                    style: AppTextStyles.teamName,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
+            const SizedBox(height: AppSpacing.sm),
+            // ── Teams row — fixed-width center prevents shifting ──
+            MatchTeamsRow(
+              homeTeam: match.homeTeam.name,
+              awayTeam: match.awayTeam.name,
+              center: (isLive || isFinished)
+                  ? MatchScoreDisplay(
+                      home: match.homeScore ?? 0,
+                      away: match.awayScore ?? 0,
+                    )
+                  : const MatchSeparator(),
             ),
           ],
         ),
