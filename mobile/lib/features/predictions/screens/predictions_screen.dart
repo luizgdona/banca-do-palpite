@@ -152,17 +152,23 @@ class _PredictionCardState extends ConsumerState<_PredictionCard> {
               )
           : null,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
+        margin: const EdgeInsets.only(bottom: AppSpacing.sm + 2),
         decoration: BoxDecoration(
-          color: AppColors.green,
-          borderRadius: BorderRadius.circular(12),
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [AppColors.green, AppColors.greenDark],
+          ),
+          borderRadius: AppSpacing.cardRadius,
           border: isLive ? Border.all(color: AppColors.liveBadge, width: 1.5) : null,
+          boxShadow: AppSpacing.subtleShadow,
         ),
         child: Column(
           children: [
             // Header
             Padding(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 0),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.base, AppSpacing.md, AppSpacing.base, 0),
               child: Row(
                 children: [
                   if (isLive)
@@ -179,7 +185,10 @@ class _PredictionCardState extends ConsumerState<_PredictionCard> {
             ),
             // Score row
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.base,
+                vertical: AppSpacing.md,
+              ),
               child: Row(
                 children: [
                   // Home team
@@ -187,10 +196,12 @@ class _PredictionCardState extends ConsumerState<_PredictionCard> {
                     child: Text(
                       match.homeTeam.name,
                       textAlign: TextAlign.right,
-                      style: AppTextStyles.teamName.copyWith(fontSize: 16),
+                      style: AppTextStyles.teamName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: AppSpacing.sm),
                   if (isLive || isFinished) ...[
                     _RealScoreDisplay(
                       home: match.homeScore ?? 0,
@@ -203,12 +214,11 @@ class _PredictionCardState extends ConsumerState<_PredictionCard> {
                       onChanged: (_) => _onChanged(),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.xs + 2),
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
                       child: Text(
                         '×',
                         style: AppTextStyles.sectionTitle.copyWith(
-                          fontSize: 20,
+                          fontSize: 18,
                           color: AppColors.mutedText,
                         ),
                       ),
@@ -219,11 +229,13 @@ class _PredictionCardState extends ConsumerState<_PredictionCard> {
                       onChanged: (_) => _onChanged(),
                     ),
                   ],
-                  const SizedBox(width: 10),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
                       match.awayTeam.name,
-                      style: AppTextStyles.teamName.copyWith(fontSize: 16),
+                      style: AppTextStyles.teamName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],

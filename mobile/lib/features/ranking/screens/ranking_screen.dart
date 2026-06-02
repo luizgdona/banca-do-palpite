@@ -89,40 +89,51 @@ class _RankingRow extends StatelessWidget {
             : Colors.transparent;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 6),
+      margin: const EdgeInsets.only(bottom: AppSpacing.xs + 2),
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
+        horizontal: AppSpacing.base,
+        vertical: AppSpacing.sm + 2,
+      ),
       decoration: BoxDecoration(
         color: sticky ? AppColors.inputFill : bgColor,
         borderRadius: AppSpacing.inputRadius,
         border: entry.isMe
-            ? Border.all(color: AppColors.amber.withAlpha(100), width: 1.5)
+            ? Border.all(color: AppColors.amber.withAlpha(120), width: 1.5)
             : sticky
                 ? Border.all(color: AppColors.divider)
                 : null,
+        boxShadow: entry.isMe ? AppSpacing.subtleShadow : null,
       ),
       child: Row(
         children: [
+          // Position — fixed width so all rows align
           SizedBox(
-            width: 40,
+            width: 36,
             child: Text(
               '${entry.position}°',
-              style: (isTop3 ? AppTextStyles.rankPositionTop : AppTextStyles.rankPosition)
+              style: (isTop3
+                      ? AppTextStyles.rankPositionTop
+                      : AppTextStyles.rankPosition)
                   .copyWith(color: posColor),
             ),
           ),
           AppAvatar(name: entry.user.name),
           AppSpacing.gapMdH,
+          // Name + subtitle
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   entry.user.name,
-                  style: AppTextStyles.bodyMd.copyWith(
+                  style: AppTextStyles.memberName.copyWith(
                     fontWeight:
                         entry.isMe ? FontWeight.w700 : FontWeight.w500,
+                    color: AppColors.darkText,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 if (entry.exactCount > 0)
                   Text(
@@ -132,14 +143,20 @@ class _RankingRow extends StatelessWidget {
               ],
             ),
           ),
-          Text(
-            '${entry.totalPoints}',
-            style: AppTextStyles.rankPoints.copyWith(
-              color: entry.isMe ? AppColors.amber : AppColors.darkText,
-            ),
+          // Points
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '${entry.totalPoints}',
+                style: AppTextStyles.rankPoints.copyWith(
+                  color: entry.isMe ? AppColors.amber : AppColors.darkText,
+                ),
+              ),
+              Text('pts', style: AppTextStyles.micro),
+            ],
           ),
-          AppSpacing.gapXs,
-          Text('pts', style: AppTextStyles.caption),
         ],
       ),
     );

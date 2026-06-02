@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 
 /// Pulsing "AO VIVO" badge with optional match minute.
@@ -22,9 +21,10 @@ class _AppLiveBadgeState extends State<AppLiveBadge>
     super.initState();
     _pulse = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 900),
+      duration: const Duration(milliseconds: 1000),
     )..repeat(reverse: true);
-    _opacity = Tween<double>(begin: 0.4, end: 1.0).animate(_pulse);
+    _opacity = CurvedAnimation(parent: _pulse, curve: Curves.easeInOut)
+        .drive(Tween<double>(begin: 0.5, end: 1.0));
   }
 
   @override
@@ -35,21 +35,19 @@ class _AppLiveBadgeState extends State<AppLiveBadge>
 
   @override
   Widget build(BuildContext context) {
+    final label = widget.minute != null
+        ? '● VIVO  ${widget.minute}\''
+        : '● AO VIVO';
+
     return FadeTransition(
       opacity: _opacity,
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xs / 2,
-        ),
-        decoration: const BoxDecoration(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
           color: AppColors.liveBadge,
-          borderRadius: AppSpacing.badgeRadius,
+          borderRadius: BorderRadius.circular(4),
         ),
-        child: Text(
-          '● AO VIVO${widget.minute != null ? "  ${widget.minute}\'" : ""}',
-          style: AppTextStyles.badgeLabel,
-        ),
+        child: Text(label, style: AppTextStyles.liveBadgeLabel),
       ),
     );
   }

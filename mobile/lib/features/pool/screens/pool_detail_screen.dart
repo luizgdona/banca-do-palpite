@@ -165,64 +165,95 @@ class _MatchCard extends StatelessWidget {
     final isFinished = match.status == MatchStatus.finished;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm + 2),
       decoration: BoxDecoration(
-        color: AppColors.green,
-        borderRadius: BorderRadius.circular(12),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isLive
+              ? [AppColors.green, AppColors.greenDark]
+              : [AppColors.green, AppColors.greenDark],
+        ),
+        borderRadius: AppSpacing.cardRadius,
         border: isLive
             ? Border.all(color: AppColors.liveBadge, width: 1.5)
             : null,
+        boxShadow: AppSpacing.subtleShadow,
       ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              if (isLive)
-                Padding(
-                  padding: const EdgeInsets.only(right: AppSpacing.sm),
-                  child: AppLiveBadge(minute: match.minute),
-                )
-              else
-                Text(
-                  _formatDate(match.scheduledAt),
-                  style: AppTextStyles.micro,
-                ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  match.homeTeam.name,
-                  textAlign: TextAlign.right,
-                  style: AppTextStyles.teamName,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              if (isLive || isFinished) ...[
-                Text('${match.homeScore ?? 0}', style: AppTextStyles.scoreMd),
-                Text(
-                  '  ×  ',
-                  style: AppTextStyles.bodySm.copyWith(color: AppColors.mutedText),
-                ),
-                Text('${match.awayScore ?? 0}', style: AppTextStyles.scoreMd),
-              ] else
-                Text(
-                  '  ×  ',
-                  style: AppTextStyles.sectionTitle.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.mutedText,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.base,
+          vertical: AppSpacing.md,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Status row
+            Row(
+              children: [
+                if (isLive)
+                  AppLiveBadge(minute: match.minute)
+                else
+                  Text(
+                    _formatDate(match.scheduledAt),
+                    style: AppTextStyles.micro,
+                  ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.sm + 2),
+            // Teams + score
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    match.homeTeam.name,
+                    textAlign: TextAlign.right,
+                    style: AppTextStyles.teamName,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Text(match.awayTeam.name, style: AppTextStyles.teamName),
-              ),
-            ],
-          ),
-        ],
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                  child: (isLive || isFinished)
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('${match.homeScore ?? 0}',
+                                style: AppTextStyles.scoreMd),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 6),
+                              child: Text(
+                                '×',
+                                style: AppTextStyles.micro.copyWith(
+                                  fontSize: 14,
+                                  color: AppColors.mutedText,
+                                ),
+                              ),
+                            ),
+                            Text('${match.awayScore ?? 0}',
+                                style: AppTextStyles.scoreMd),
+                          ],
+                        )
+                      : Text(
+                          '×',
+                          style: AppTextStyles.sectionTitle
+                              .copyWith(color: AppColors.mutedText),
+                        ),
+                ),
+                Expanded(
+                  child: Text(
+                    match.awayTeam.name,
+                    style: AppTextStyles.teamName,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -6,12 +6,14 @@ class AppColors {
   // Base
   static const cream = Color(0xFFF5EEDC);
   static const green = Color(0xFF124832);
+  static const greenDark = Color(0xFF0C3020);  // deeper green for card gradients
   static const greenMid = Color(0xFF1E6444);
   static const greenLight = Color(0xFF2D8255);
 
   // Acentos
   static const amber = Color(0xFFDC8C14);
   static const amberLight = Color(0xFFF0AA32);
+  static const amberDark = Color(0xFFC07810);   // gradient bottom for buttons
 
   // Status
   static const liveBadge = Color(0xFFB43728);

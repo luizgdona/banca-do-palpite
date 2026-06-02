@@ -211,66 +211,100 @@ class _PoolCard extends StatelessWidget {
       onTap: () => context.push('/pool/${pool.id}'),
       child: Container(
         margin: const EdgeInsets.only(bottom: AppSpacing.md),
-        padding: AppSpacing.cardPadding,
         decoration: BoxDecoration(
-          color: AppColors.green,
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [AppColors.green, AppColors.greenDark],
+            stops: [0.0, 1.0],
+          ),
           borderRadius: AppSpacing.cardRadius,
-          boxShadow: const [
-            BoxShadow(
-              color: AppColors.cardShadow,
-              blurRadius: 8,
-              offset: Offset(0, 2),
-            ),
-          ],
+          boxShadow: AppSpacing.cardShadow,
         ),
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColors.greenMid,
-                borderRadius: BorderRadius.circular(AppSpacing.sm),
-              ),
-              child: pool.competition?.logoUrl != null
-                  ? CachedNetworkImage(
-                      imageUrl: pool.competition!.logoUrl!,
-                      width: 30,
-                      height: 30,
-                      errorWidget: (_, __, ___) =>
-                          const Icon(Icons.emoji_events_outlined, color: AppColors.amber),
-                    )
-                  : const Icon(Icons.emoji_events_outlined, color: AppColors.amber),
-            ),
-            const SizedBox(width: AppSpacing.md + 2),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(pool.name, style: AppTextStyles.cardTitle),
-                  Text(
-                    pool.competition?.name ?? '',
-                    style: AppTextStyles.caption,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.base,
+            vertical: AppSpacing.md,
+          ),
+          child: Row(
+            children: [
+              // Competition icon
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: AppColors.greenMid.withAlpha(180),
+                  borderRadius: BorderRadius.circular(AppSpacing.sm + 2),
+                  border: Border.all(
+                    color: AppColors.greenLight.withAlpha(60),
+                    width: 1,
                   ),
-                  AppSpacing.gapXs,
-                  Row(
-                    children: [
-                      _Chip(
-                        icon: Icons.group_outlined,
-                        label: '${pool.count?.members ?? 0}',
-                      ),
-                      AppSpacing.gapSmH,
-                      _Chip(
-                        icon: Icons.sports_soccer,
-                        label: '${pool.count?.poolMatches ?? 0} jogos',
-                      ),
-                    ],
-                  ),
-                ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(AppSpacing.sm + 2),
+                  child: pool.competition?.logoUrl != null
+                      ? CachedNetworkImage(
+                          imageUrl: pool.competition!.logoUrl!,
+                          width: 28,
+                          height: 28,
+                          fit: BoxFit.contain,
+                          errorWidget: (_, __, ___) => const Icon(
+                            Icons.emoji_events_outlined,
+                            color: AppColors.amber,
+                            size: 22,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.emoji_events_outlined,
+                          color: AppColors.amber,
+                          size: 22,
+                        ),
+                ),
               ),
-            ),
-            const Icon(Icons.chevron_right, color: AppColors.mutedText),
-          ],
+              const SizedBox(width: AppSpacing.md),
+              // Info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      pool.name,
+                      style: AppTextStyles.cardTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      pool.competition?.name ?? '',
+                      style: AppTextStyles.cardSubtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: AppSpacing.xs + 2),
+                    Row(
+                      children: [
+                        _Chip(
+                          icon: Icons.group_outlined,
+                          label: '${pool.count?.members ?? 0}',
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        _Chip(
+                          icon: Icons.sports_soccer,
+                          label: '${pool.count?.poolMatches ?? 0} jogos',
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.mutedText,
+                size: 20,
+              ),
+            ],
+          ),
         ),
       ),
     );

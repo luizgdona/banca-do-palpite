@@ -19,15 +19,18 @@ class AppAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Use a slightly smaller font ratio so the letter sits comfortably
+    final fontSize = (radius * 0.95).clamp(10.0, 36.0);
     return CircleAvatar(
       radius: radius,
       backgroundColor: backgroundColor,
       child: Text(
         name.isNotEmpty ? name[0].toUpperCase() : '?',
         style: GoogleFonts.barlowCondensed(
-          fontWeight: FontWeight.w800,
-          fontSize: radius * 1.1,
+          fontWeight: FontWeight.w900,
+          fontSize: fontSize,
           color: textColor,
+          height: 1,
         ),
       ),
     );
