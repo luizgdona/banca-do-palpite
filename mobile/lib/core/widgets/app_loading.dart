@@ -1,26 +1,29 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 
-/// Centered amber loading indicator, consistent across all screens.
+/// Centered neon-green loading indicator.
 class AppLoadingIndicator extends StatelessWidget {
   const AppLoadingIndicator({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const Center(
-      child: CircularProgressIndicator(color: AppColors.amber),
+      child: CircularProgressIndicator(
+        color: AppColors.primary,
+        strokeWidth: 2,
+      ),
     );
   }
 }
 
-/// Full-screen scaffold with a centered loading indicator.
+/// Full-screen dark scaffold with loading indicator.
 class AppLoadingScaffold extends StatelessWidget {
   const AppLoadingScaffold({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: AppColors.cream,
+      backgroundColor: AppColors.background,
       body: AppLoadingIndicator(),
     );
   }

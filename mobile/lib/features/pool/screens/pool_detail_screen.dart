@@ -75,27 +75,28 @@ class _PoolDetailViewState extends ConsumerState<_PoolDetailView>
     final isOwner = authState?.user?.id == pool.ownerId;
 
     return Scaffold(
-      backgroundColor: AppColors.cream,
+      backgroundColor: AppColors.background,
       body: NestedScrollView(
         headerSliverBuilder: (context, _) => [
           SliverAppBar(
-            backgroundColor: AppColors.green,
+            backgroundColor: AppColors.surfaceContainerLow,
             expandedHeight: 140,
             pinned: true,
-            leading: BackButton(color: AppColors.offWhite),
+            leading: BackButton(color: AppColors.primary),
             actions: [
               if (isOwner)
                 IconButton(
-                  icon: const Icon(Icons.settings_outlined, color: AppColors.offWhite),
+                  icon: const Icon(Icons.settings_outlined, color: AppColors.onSurfaceVariant),
                   onPressed: () {},
                 ),
               IconButton(
-                icon: const Icon(Icons.share_outlined, color: AppColors.offWhite),
+                icon: const Icon(Icons.share_outlined, color: AppColors.onSurfaceVariant),
                 onPressed: () => _showInviteSheet(context, pool),
               ),
             ],
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: const EdgeInsets.fromLTRB(16, 0, 16, 56),
+              background: Container(color: AppColors.surfaceContainerLow),
               title: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,7 +104,8 @@ class _PoolDetailViewState extends ConsumerState<_PoolDetailView>
                   Text(
                     pool.name,
                     style: AppTextStyles.sectionTitle.copyWith(
-                      color: AppColors.offWhite,
+                      fontSize: 20,
+                      color: AppColors.onSurface,
                     ),
                   ),
                   if (pool.competition != null)
@@ -116,11 +118,10 @@ class _PoolDetailViewState extends ConsumerState<_PoolDetailView>
             ),
             bottom: TabBar(
               controller: _tabs,
-              indicatorColor: AppColors.amber,
-              indicatorWeight: 3,
-              labelStyle: AppTextStyles.tabLabel,
-              labelColor: AppColors.amber,
-              unselectedLabelColor: AppColors.mutedText,
+              indicatorColor: AppColors.primary,
+              indicatorWeight: 2,
+              labelColor: AppColors.primary,
+              unselectedLabelColor: AppColors.onSurfaceVariant,
               tabs: const [
                 Tab(text: 'JOGOS'),
                 Tab(text: 'RANKING'),
@@ -144,9 +145,9 @@ class _PoolDetailViewState extends ConsumerState<_PoolDetailView>
   void _showInviteSheet(BuildContext context, PoolModel pool) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.green,
+      backgroundColor: AppColors.surfaceContainerHigh,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (_) => _InviteSheet(pool: pool),
     );
@@ -286,7 +287,7 @@ class _InviteSheet extends StatelessWidget {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -294,41 +295,39 @@ class _InviteSheet extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.mutedText,
+                color: AppColors.outlineVariant,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 20),
-            Text(
-              'CONVITE',
-              style: AppTextStyles.sectionTitle.copyWith(color: AppColors.offWhite),
-            ),
+            AppSpacing.gapLg,
+            Text('CONVITE', style: AppTextStyles.sectionTitle.copyWith(fontSize: 20)),
             AppSpacing.gapXs,
-            Text(pool.name, style: AppTextStyles.bodyMd.copyWith(color: AppColors.mutedText)),
-            const SizedBox(height: 24),
+            Text(pool.name, style: AppTextStyles.bodySm),
+            AppSpacing.gapXl,
             QrImageView(
               data: inviteUrl,
               version: QrVersions.auto,
               size: 180,
-              backgroundColor: AppColors.offWhite,
+              backgroundColor: AppColors.onSurface,
               eyeStyle: const QrEyeStyle(
                 eyeShape: QrEyeShape.square,
-                color: AppColors.green,
+                color: AppColors.background,
               ),
               dataModuleStyle: const QrDataModuleStyle(
                 dataModuleShape: QrDataModuleShape.square,
-                color: AppColors.green,
+                color: AppColors.background,
               ),
             ),
-            const SizedBox(height: 20),
+            AppSpacing.gapLg,
             Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.base,
                 vertical: AppSpacing.sm + 2,
               ),
-              decoration: const BoxDecoration(
-                color: AppColors.greenMid,
+              decoration: BoxDecoration(
+                color: AppColors.background,
                 borderRadius: AppSpacing.inputRadius,
+                border: Border.all(color: AppColors.primary.withAlpha(60)),
               ),
               child: Text(pool.inviteCode, style: AppTextStyles.inviteCode),
             ),

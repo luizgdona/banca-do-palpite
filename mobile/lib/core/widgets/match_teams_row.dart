@@ -1,20 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
-/// Consistent home / center / away row used in match cards and prediction cards.
-///
-/// The [center] widget always occupies a FIXED [centerWidth], so team names
-/// never shift position regardless of whether the center shows a score, inputs,
-/// or just a separator — eliminating the #1 visual inconsistency.
+/// Fixed-center team row — home | 104px center | away.
+/// The center is always the same width regardless of content type.
 class MatchTeamsRow extends StatelessWidget {
   final String homeTeam;
   final String awayTeam;
-
-  /// The center content: score text, prediction inputs, or a separator.
   final Widget center;
 
-  /// Fixed width reserved for the center section.
   static const double centerWidth = 104.0;
 
   const MatchTeamsRow({
@@ -55,7 +50,7 @@ class MatchTeamsRow extends StatelessWidget {
   }
 }
 
-/// Score display for live/finished matches.
+/// Live/finished score display.
 class MatchScoreDisplay extends StatelessWidget {
   final int home;
   final int away;
@@ -72,10 +67,11 @@ class MatchScoreDisplay extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 6),
           child: Text(
-            '×',
-            style: AppTextStyles.teamName.copyWith(
-              color: AppColors.mutedText,
+            'x',
+            style: GoogleFonts.lexend(
+              fontSize: 16,
               fontWeight: FontWeight.w400,
+              color: AppColors.onSurfaceVariant,
             ),
           ),
         ),
@@ -85,17 +81,18 @@ class MatchScoreDisplay extends StatelessWidget {
   }
 }
 
-/// Simple "×" separator for upcoming matches.
+/// Separator for upcoming matches.
 class MatchSeparator extends StatelessWidget {
   const MatchSeparator({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Text(
-      '×',
-      style: AppTextStyles.sectionTitle.copyWith(
-        color: AppColors.mutedText,
-        fontWeight: FontWeight.w400,
+      'VS',
+      style: GoogleFonts.lexend(
+        fontSize: 20,
+        fontWeight: FontWeight.w900,
+        color: AppColors.primary,
       ),
     );
   }

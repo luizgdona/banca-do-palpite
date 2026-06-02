@@ -49,7 +49,9 @@ class _BancaDoPalpiteAppState extends ConsumerState<BancaDoPalpiteApp> {
 
     return MaterialApp.router(
       title: 'Banca do Palpite',
-      theme: AppTheme.light,
+      theme: AppTheme.dark,
+      darkTheme: AppTheme.dark,
+      themeMode: ThemeMode.dark,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
     );

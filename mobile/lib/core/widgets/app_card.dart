@@ -2,26 +2,30 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 
-/// Standard green card used throughout the app.
-/// Handles gradient, shadow, border, and tap ripple consistently.
+/// Standard dark surface card with optional left accent border.
+/// Matches the Stitch design: `bg-surface-container-high` + left green bar.
 class AppCard extends StatelessWidget {
   final Widget child;
 
-  /// Optional colored border (e.g. live-red for live matches).
+  /// Left accent color. `null` = no accent bar.
+  final Color? accentColor;
+
+  /// Full border color (e.g. live-match red). Mutually exclusive with accentColor.
   final Color? borderColor;
   final double borderWidth;
 
-  /// Bottom spacing between consecutive cards.
   final double bottomMargin;
-
+  final bool hoverable;
   final VoidCallback? onTap;
 
   const AppCard({
     super.key,
     required this.child,
+    this.accentColor,
     this.borderColor,
-    this.borderWidth = 1.5,
+    this.borderWidth = 1,
     this.bottomMargin = AppSpacing.sm + 2,
+    this.hoverable = true,
     this.onTap,
   });
 
@@ -30,30 +34,34 @@ class AppCard extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(bottom: bottomMargin),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.green, AppColors.greenDark],
-          stops: [0.2, 1.0],
-        ),
-        borderRadius: AppSpacing.cardRadius,
-        // Outer border — reserve space even when absent so layout is stable.
-        border: Border.all(
-          color: borderColor ?? Colors.transparent,
-          width: borderWidth,
-        ),
-        boxShadow: AppSpacing.subtleShadow,
+        color: AppColors.surfaceContainerHigh,
+        borderRadius: AppSpacing.tileRadius,
+        border: borderColor != null
+            ? Border.all(color: borderColor!, width: borderWidth)
+            : null,
       ),
-      child: ClipRRect(
-        borderRadius: AppSpacing.cardRadius,
-        child: onTap != null
-            ? InkWell(
-                onTap: onTap,
-                splashColor: AppColors.greenLight.withAlpha(40),
-                highlightColor: AppColors.greenLight.withAlpha(20),
-                child: child,
-              )
-            : child,
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        children: [
+          // Left accent bar (Stitch pattern)
+          if (accentColor != null)
+            Positioned(
+              left: 0, top: 0, bottom: 0,
+              child: Container(width: 3, color: accentColor),
+            ),
+          // Content
+          onTap != null
+              ? Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: onTap,
+                    splashColor: AppColors.primary.withAlpha(20),
+                    highlightColor: AppColors.primary.withAlpha(10),
+                    child: child,
+                  ),
+                )
+              : child,
+        ],
       ),
     );
   }

@@ -1,6 +1,5 @@
 """
-Banca do Palpite — screenshot mockup generator.
-Matches the Flutter design system exactly. No emoji (Windows fonts don't render them).
+Banca do Palpite — screenshot mockups with the new dark Stitch design.
 Run: py -3 docs/gen_screenshots.py
 """
 
@@ -10,47 +9,38 @@ import os, math
 OUT = r"C:\Users\gu150\banca_do_palpite\docs\screenshots"
 os.makedirs(OUT, exist_ok=True)
 
-# ── Design tokens ─────────────────────────────────────────────────────────────
 W, H = 390, 844
 
-C = {
-    "cream":      (245, 238, 220),
-    "green":      ( 18,  72,  50),
-    "green_dark": ( 12,  48,  32),
-    "green_mid":  ( 30, 100,  68),
-    "green_lt":   ( 45, 130,  85),
-    "amber":      (220, 140,  20),
-    "amber_lt":   (240, 170,  50),
-    "amber_dk":   (192, 120,  16),
-    "off_white":  (252, 248, 238),
-    "muted":      (122, 154, 122),
-    "muted_dk":   (138, 138, 122),
-    "dark_text":  ( 22,  30,  22),
-    "input":      (237, 228, 204),
-    "divider":    (212, 201, 168),
-    "live_red":   (180,  55,  40),
-    "gold":       (255, 215,   0),
-    "silver":     (176, 176, 176),
-    "bronze":     (205, 127,  50),
-    "white":      (255, 255, 255),
-    "black":      (  0,   0,   0),
-    "transp":     None,
-}
+# ── Color palette ─────────────────────────────────────────────────────────────
+BG       = (14,  14,  14)
+SURF_LOW = (19,  19,  19)
+SURF     = (26,  26,  26)
+SURF_HI  = (32,  32,  31)
+SURF_HHI = (38,  38,  38)
+PRIMARY  = (157, 241, 151)  # #9df197 neon green
+PRI_CNT  = ( 98, 178,  96)
+ON_PRI   = ( 0,  92,  21)
+SECOND   = (245, 206,  83)  # #f5ce53 golden yellow
+SEC_CNT  = (115,  92,   0)
+ON_SURF  = (255, 255, 255)
+ON_SV    = (173, 170, 170)  # on-surface-variant
+OUTLINE  = (118, 117, 117)
+OUTV     = ( 72,  72,  71)
+ERROR    = (255, 113, 108)  # error/live
+GOLD     = (245, 206,  83)
+SILVER   = (176, 176, 176)
+BRONZE   = (205, 127,  50)
 
-APPBAR  = 56
-TABBAR  = 46
-RADIUS  = 16   # card
-IN_RAD  = 10   # input
+APPBAR_H = 56
+TAB_H    = 44
+SIDEBAR  = 256
 
 
 def font(size, bold=False):
-    paths = (
-        [r"C:\Windows\Fonts\arialbd.ttf", r"C:\Windows\Fonts\calibrib.ttf"]
-        if bold else
-        [r"C:\Windows\Fonts\arial.ttf",   r"C:\Windows\Fonts\calibri.ttf",
-         r"C:\Windows\Fonts\segoeui.ttf"]
-    )
-    for p in paths:
+    candidates_bold    = [r"C:\Windows\Fonts\arialbd.ttf", r"C:\Windows\Fonts\calibrib.ttf"]
+    candidates_regular = [r"C:\Windows\Fonts\arial.ttf",   r"C:\Windows\Fonts\calibri.ttf",
+                           r"C:\Windows\Fonts\segoeui.ttf"]
+    for p in (candidates_bold if bold else candidates_regular):
         if os.path.exists(p):
             return ImageFont.truetype(p, size)
     return ImageFont.load_default()
@@ -59,166 +49,90 @@ FH = lambda s: font(s, True)
 FB = lambda s: font(s, False)
 
 
-# ── Drawing primitives ────────────────────────────────────────────────────────
-
 def rr(draw, x0, y0, x1, y1, r, fill=None, outline=None, w=1):
-    draw.rounded_rectangle([x0, y0, x1, y1], radius=r,
-                            fill=fill, outline=outline, width=w)
+    draw.rounded_rectangle([x0, y0, x1, y1], radius=r, fill=fill, outline=outline, width=w)
 
 
-def vgrad(img, x0, y0, x1, y1, r, top, bot):
-    """Vertical gradient inside a rounded-rect mask."""
-    gw, gh = x1 - x0, y1 - y0
-    if gw <= 0 or gh <= 0:
-        return
-    g = Image.new("RGBA", (gw, gh))
-    for y in range(gh):
-        t = y / max(gh - 1, 1)
-        c = tuple(int(a + (b - a) * t) for a, b in zip(top, bot)) + (255,)
-        ImageDraw.Draw(g).line([(0, y), (gw, y)], fill=c)
-    mask = Image.new("L", (gw, gh), 0)
-    ImageDraw.Draw(mask).rounded_rectangle([0, 0, gw, gh], radius=r, fill=255)
-    img.paste(g, (x0, y0), mask)
+def logo(draw, x, y, size=22):
+    """'Banca do Palpite' italic text logo in neon green."""
+    draw.text((x, y), "Banca do ", font=FB(size), fill=ON_SURF, anchor="lm")
+    w = int(draw.textlength("Banca do ", font=FB(size)))
+    draw.text((x + w, y), "Palpite", font=FH(size), fill=PRIMARY, anchor="lm")
 
 
-def card_shadow(img, x0, y0, x1, y1, r=RADIUS):
-    s = Image.new("RGBA", img.size, (0, 0, 0, 0))
-    ImageDraw.Draw(s).rounded_rectangle(
-        [x0 + 1, y0 + 4, x1 + 1, y1 + 4], radius=r, fill=(0, 0, 0, 36))
-    blurred = s.filter(ImageFilter.GaussianBlur(8))
-    img.paste(blurred, mask=blurred.split()[3])
-
-
-def card(img, draw, x0, y0, x1, y1, border_color=None, border_w=2):
-    """Draw a gradient green card with shadow and optional border."""
-    card_shadow(img, x0, y0, x1, y1)
-    vgrad(img, x0, y0, x1, y1, RADIUS, C["green"], C["green_dark"])
-    if border_color:
-        rr(draw, x0, y0, x1, y1, RADIUS, outline=border_color, w=border_w)
-
-
-def appbar(draw, title="", back=True, icon_right=None):
-    draw.rectangle([0, 0, W, APPBAR], fill=C["green"])
+def appbar(draw, title, back=True):
+    draw.rectangle([0, 0, W, APPBAR_H], fill=SURF_LOW)
     x = 14
     if back:
-        draw.text((x, APPBAR // 2), "←", font=FH(18), fill=C["off_white"], anchor="lm")
-        x = 42
-    if title:
-        draw.text((x, APPBAR // 2), title, font=FH(19), fill=C["off_white"], anchor="lm")
-    # person icon (geometric)
-    if icon_right:
-        _icon_person(draw, W - 20, APPBAR // 2, 10, C["off_white"])
+        draw.text((x, APPBAR_H // 2), "<", font=FH(18), fill=PRIMARY, anchor="lm")
+        x = 40
+    draw.text((x, APPBAR_H // 2), title, font=FH(18), fill=PRIMARY, anchor="lm")
+    # notif icon
+    draw.ellipse([W-38, APPBAR_H//2-8, W-22, APPBAR_H//2+8], outline=ON_SV, width=1)
+    draw.text((W-14, APPBAR_H//2), "o", font=FB(14), fill=ON_SV, anchor="mm")
 
 
-def appbar_logo(draw, img):
-    """Home screen app bar with hex logo + logotype."""
-    draw.rectangle([0, 0, W, APPBAR], fill=C["green"])
-    _hex_logo(draw, 28, APPBAR // 2, 14)
-    draw.text((48, APPBAR // 2 - 7), "BANCA DO",
-              font=FB(9), fill=C["muted"], anchor="lm")
-    draw.text((48, APPBAR // 2 + 5), "PALPITE",
-              font=FH(16), fill=C["amber"], anchor="lm")
-    _icon_person(draw, W - 18, APPBAR // 2, 10, C["off_white"])
+def appbar_home(draw):
+    draw.rectangle([0, 0, W, APPBAR_H], fill=SURF_LOW)
+    logo(draw, 16, APPBAR_H // 2, size=20)
+    draw.ellipse([W-36, APPBAR_H//2-9, W-18, APPBAR_H//2+9], outline=PRIMARY, width=1)
+    draw.text((W-27, APPBAR_H//2), "i", font=FH(12), fill=PRIMARY, anchor="mm")
 
 
-def tabbar(draw, tabs, selected, top):
-    draw.rectangle([0, top, W, top + TABBAR], fill=C["green"])
-    tw = W // len(tabs)
+def appbar_pool(draw, name, subtitle, tabs, sel):
+    ext = APPBAR_H + 52
+    draw.rectangle([0, 0, W, ext + TAB_H], fill=SURF_LOW)
+    draw.text((14, 20), "<", font=FH(18), fill=PRIMARY, anchor="lm")
+    draw.text((W - 44, 20), "o", font=FB(14), fill=ON_SV, anchor="mm")
+    draw.text((W - 20, 20), "^", font=FB(14), fill=ON_SV, anchor="mm")
+    # Accent bar left
+    draw.rectangle([0, 0, 3, ext + TAB_H], fill=PRIMARY)
+    draw.text((16, APPBAR_H + 14), name, font=FH(18), fill=ON_SURF, anchor="lm")
+    draw.text((16, APPBAR_H + 34), subtitle, font=FB(10), fill=ON_SV, anchor="lm")
+    # Tab bar
+    ty = ext
+    draw.rectangle([0, ty, W, ty + TAB_H], fill=SURF_LOW)
+    draw.line([(0, ty), (W, ty)], fill=OUTV, width=1)
+    n = len(tabs)
+    tw = W // n
     for i, label in enumerate(tabs):
         cx = i * tw + tw // 2
-        cy = top + TABBAR // 2
-        active = i == selected
-        draw.text((cx, cy), label, font=FH(13),
-                  fill=C["amber"] if active else C["muted"], anchor="mm")
+        cy = ty + TAB_H // 2
+        active = i == sel
+        draw.text((cx, cy), label, font=FH(11),
+                  fill=PRIMARY if active else ON_SV, anchor="mm")
         if active:
-            rr(draw, i * tw + 10, top + TABBAR - 3, (i + 1) * tw - 10, top + TABBAR,
-               2, fill=C["amber"])
-    return top + TABBAR
+            draw.rectangle([i*tw+8, ty+TAB_H-2, (i+1)*tw-8, ty+TAB_H], fill=PRIMARY)
+    return ext + TAB_H
 
 
-def appbar_pool(draw, img, name, subtitle, tabs, sel):
-    ext = APPBAR + 52
-    draw.rectangle([0, 0, W, ext], fill=C["green"])
-    draw.text((14, 20), "←", font=FH(18), fill=C["off_white"], anchor="lm")
-    _icon_settings(draw, W - 46, 20, 9, C["off_white"])
-    _icon_share(draw, W - 18, 20, 9, C["off_white"])
-    draw.text((16, APPBAR + 14), name, font=FH(20), fill=C["off_white"], anchor="lm")
-    draw.text((16, APPBAR + 36), subtitle, font=FB(11), fill=C["muted"], anchor="lm")
-    return tabbar(draw, tabs, sel, ext)
+def accent_card(img, draw, x0, y0, x1, y1, accent=True, border_color=None):
+    draw.rectangle([x0, y0, x1, y1], fill=SURF_HI)
+    if accent:
+        draw.rectangle([x0, y0, x0+3, y1], fill=PRIMARY)
+    if border_color:
+        draw.rectangle([x0, y0, x1, y1], outline=border_color, width=1)
 
 
-# ── Geometric icon helpers ────────────────────────────────────────────────────
-
-def _hex_logo(draw, cx, cy, size):
-    r = size
-    pts_o = [(cx + r * math.cos(math.radians(60*i-30)),
-               cy + r * math.sin(math.radians(60*i-30))) for i in range(6)]
-    pts_i = [(cx + r*.8*math.cos(math.radians(60*i-30)),
-               cy + r*.8*math.sin(math.radians(60*i-30))) for i in range(6)]
-    draw.polygon(pts_o, fill=C["amber_dk"])
-    draw.polygon(pts_i, fill=C["amber"])
-    draw.text((cx, cy), "B", font=FH(int(size * 1.1)), fill=C["green"], anchor="mm")
+def input_field(draw, x, y, w, h, label, value="", focused=False):
+    draw.rectangle([x, y, x+w, y+h], fill=BG, outline=PRIMARY if focused else OUTV, width=1)
+    tx = x + 14
+    draw.text((tx, y + h//2), value or label,
+              font=FB(14), fill=ON_SURF if value else ON_SV, anchor="lm")
+    if focused:
+        draw.rectangle([x, y+h-2, x+w, y+h], fill=PRIMARY)
 
 
-def _icon_person(draw, cx, cy, r, color):
-    draw.ellipse([cx-r*.45, cy-r*.9, cx+r*.45, cy-r*.1], outline=color, width=1)
-    draw.arc([cx-r, cy+r*.1, cx+r, cy+r*2], start=0, end=180, fill=color, width=1)
-
-
-def _icon_settings(draw, cx, cy, r, color):
-    draw.ellipse([cx-r*.4, cy-r*.4, cx+r*.4, cy+r*.4], outline=color, width=1)
-    for a in range(0, 360, 60):
-        x1 = cx + r*.4*math.cos(math.radians(a))
-        y1 = cy + r*.4*math.sin(math.radians(a))
-        x2 = cx + r*math.cos(math.radians(a))
-        y2 = cy + r*math.sin(math.radians(a))
-        draw.line([x1, y1, x2, y2], fill=color, width=1)
-
-
-def _icon_share(draw, cx, cy, r, color):
-    draw.line([cx, cy - r, cx, cy + r], fill=color, width=1)
-    draw.line([cx - r*.5, cy - r*.4, cx, cy - r], fill=color, width=1)
-    draw.line([cx + r*.5, cy - r*.4, cx, cy - r], fill=color, width=1)
-
-
-def _icon_trophy(draw, cx, cy, r, color):
-    draw.rectangle([cx-r*.3, cy-r, cx+r*.3, cy+r*.2], fill=color)
-    draw.arc([cx-r, cy-r, cx+r, cy], start=180, end=0, fill=color, width=2)
-    draw.line([cx-r*.3, cy+r*.2, cx-r*.5, cy+r*.6], fill=color, width=2)
-    draw.line([cx+r*.3, cy+r*.2, cx+r*.5, cy+r*.6], fill=color, width=2)
-    draw.line([cx-r*.6, cy+r*.6, cx+r*.6, cy+r*.6], fill=color, width=2)
-
-
-def _icon_lock(draw, cx, cy, r, color):
-    rr(draw, cx-r*.6, cy-r*.1, cx+r*.6, cy+r*.8, 2, outline=color, w=1)
-    draw.arc([cx-r*.4, cy-r*.9, cx+r*.4, cy+r*.1], start=180, end=0, fill=color, width=1)
-
-
-def _icon_check(draw, cx, cy, r, color):
-    draw.line([cx-r, cy, cx-r*.2, cy+r*.8, cx+r, cy-r*.6], fill=color, width=2)
-
-
-def _avatar(draw, cx, cy, r, initial, bg=None, fg=None):
-    bg = bg or C["green_mid"]
-    fg = fg or C["amber"]
+def avatar(draw, cx, cy, r, initial, bg=SURF_HHI, fg=PRIMARY):
     draw.ellipse([cx-r, cy-r, cx+r, cy+r], fill=bg)
-    draw.text((cx, cy), initial, font=FH(int(r)), fill=fg, anchor="mm")
+    draw.text((cx, cy), initial, font=FH(int(r*0.9)), fill=fg, anchor="mm")
 
 
-def input_field(draw, x, y, w, h, label, has_icon=False):
-    rr(draw, x, y, x+w, y+h, IN_RAD, fill=C["input"], outline=C["divider"], w=1)
-    tx = x + (30 if has_icon else 14)
-    if has_icon:
-        draw.ellipse([x+10, y+h//2-5, x+24, y+h//2+5], outline=C["green_lt"], width=1)
-    draw.text((tx, y + h//2), label, font=FB(14), fill=C["muted_dk"], anchor="lm")
-
-
-def pts_badge(draw, x, y, pts_text, color):
-    """Small points badge with border."""
-    f = FH(11)
-    tw = int(draw.textlength(pts_text, font=f)) + 14
-    rr(draw, x, y-7, x+tw, y+9, 3, outline=color, w=1)
-    draw.text((x + tw//2, y + 1), pts_text, font=f, fill=color, anchor="mm")
+def pts_badge(draw, x, y, txt, color):
+    f = FH(10)
+    tw = int(draw.textlength(txt, font=f)) + 14
+    draw.rectangle([x, y-7, x+tw, y+9], outline=color, width=1)
+    draw.text((x+tw//2, y+1), txt, font=f, fill=color, anchor="mm")
     return tw
 
 
@@ -226,43 +140,47 @@ def pts_badge(draw, x, y, pts_text, color):
 # SCREEN 1 — Login
 # ─────────────────────────────────────────────────────────────────────────────
 def screen_login():
-    img  = Image.new("RGB", (W, H), C["cream"])
+    img  = Image.new("RGB", (W, H), BG)
     draw = ImageDraw.Draw(img)
 
     appbar(draw, "ENTRAR", back=True)
 
-    y = APPBAR + 48
-    # Logo
-    _hex_logo(draw, W//2, y + 32, 32)
-    y += 88
+    y = APPBAR_H + 48
+    logo(draw, 22, y, size=28)
+    y += 52
 
-    draw.text((22, y), "Bem-vindo de volta!", font=FH(26), fill=C["dark_text"], anchor="lm")
-    y += 34
-    draw.text((22, y), "Entre para ver seus boloes.", font=FB(13), fill=C["muted_dk"], anchor="lm")
+    # Hero headline
+    draw.text((22, y), "Bem-vindo", font=FH(42), fill=ON_SURF, anchor="lm")
+    y += 46
+    draw.text((22, y), "de volta.", font=FH(42), fill=PRIMARY, anchor="lm")
+    y += 52
+    draw.text((22, y), "Entre para ver seus boloes.", font=FB(13), fill=ON_SV, anchor="lm")
     y += 48
 
-    input_field(draw, 20, y, W-40, 52, "Email", has_icon=True)
-    y += 64
-    input_field(draw, 20, y, W-40, 52, "Senha", has_icon=True)
-    _icon_lock(draw, W-30, y+26, 8, C["muted_dk"])
-    y += 64
+    input_field(draw, 20, y, W-40, 52, "Email")
+    y += 62
+    input_field(draw, 20, y, W-40, 52, "Senha")
+    y += 62
 
-    draw.text((W-20, y+2), "Esqueci minha senha", font=FB(12), fill=C["amber"], anchor="rm")
+    draw.text((W-20, y+2), "Esqueci minha senha", font=FB(12), fill=PRIMARY, anchor="rm")
     y += 30
 
-    # Primary button (gradient)
-    vgrad(img, 20, y, W-20, y+52, 12, C["amber_lt"], C["amber_dk"])
-    draw.text((W//2, y+26), "ENTRAR", font=FH(16), fill=C["green"], anchor="mm")
+    # Gradient button
+    for ix in range(W-40):
+        t = ix / max(W-41, 1)
+        c = tuple(int(a + (b-a)*t) for a, b in zip(PRIMARY, PRI_CNT))
+        draw.line([(20+ix, y), (20+ix, y+52)], fill=c)
+    rr(draw, 20, y, W-20, y+52, 8, outline=None)
+    # Re-draw gradient as approximation
+    ImageDraw.Draw(img).rounded_rectangle([20, y, W-20, y+52], radius=8, fill=PRIMARY)
+    draw.text((W//2, y+26), "ENTRAR", font=FH(15), fill=ON_PRI, anchor="mm")
     y += 68
 
-    # Sign-up link
     t1 = "Ainda nao tem conta?  "
-    t2 = "Criar conta"
     w1 = int(draw.textlength(t1, font=FB(13)))
-    total = w1 + int(draw.textlength(t2, font=FH(13)))
-    x0 = (W - total) // 2
-    draw.text((x0, y), t1, font=FB(13), fill=C["muted_dk"], anchor="lm")
-    draw.text((x0 + w1, y), t2, font=FH(13), fill=C["amber"], anchor="lm")
+    x0 = (W - w1 - int(draw.textlength("Criar conta", font=FH(13)))) // 2
+    draw.text((x0, y), t1, font=FB(13), fill=ON_SV, anchor="lm")
+    draw.text((x0+w1, y), "Criar conta", font=FH(13), fill=PRIMARY, anchor="lm")
 
     img.save(os.path.join(OUT, "01_login.png"))
     print("  01_login.png")
@@ -272,104 +190,107 @@ def screen_login():
 # SCREEN 2 — Home
 # ─────────────────────────────────────────────────────────────────────────────
 def screen_home():
-    img  = Image.new("RGB", (W, H), C["cream"])
+    img  = Image.new("RGB", (W, H), BG)
     draw = ImageDraw.Draw(img)
 
-    appbar_logo(draw, img)
+    appbar_home(draw)
 
-    y = APPBAR + 24
-    draw.text((20, y), "Ola, Rafael!", font=FH(26), fill=C["dark_text"], anchor="lm")
-    y += 44
+    y = APPBAR_H + 24
+    draw.text((20, y), "MEU BOLAO", font=FH(9), fill=PRIMARY, anchor="lm")
+    y += 20
 
-    # Action buttons
+    # Headline
+    draw.text((20, y), "Ola, ", font=FB(36), fill=ON_SV, anchor="lm")
+    x_ola = 20 + int(draw.textlength("Ola, ", font=FB(36)))
+    draw.text((x_ola, y), "Rafael", font=FH(36), fill=ON_SURF, anchor="lm")
+    y += 50
+
+    # Buttons
     bw = (W - 52) // 2
-    vgrad(img, 20, y, 20+bw, y+46, 12, C["amber_lt"], C["amber_dk"])
-    draw.text((20+bw//2, y+23), "+ CRIAR BOLAO", font=FH(12), fill=C["green"], anchor="mm")
-    rr(draw, 20+bw+12, y, W-20, y+46, 12, outline=C["green"], w=2)
-    draw.text((20+bw+12+bw//2, y+23), "ENTRAR", font=FH(12), fill=C["green"], anchor="mm")
+    rr(draw, 20, y, 20+bw, y+46, 8, fill=PRIMARY)
+    draw.text((20+bw//2, y+23), "+ CRIAR BOLAO", font=FH(12), fill=ON_PRI, anchor="mm")
+    rr(draw, 20+bw+12, y, W-20, y+46, 8, outline=OUTV, w=1)
+    draw.text((20+bw+12+bw//2, y+23), "ENTRAR", font=FH(12), fill=ON_SURF, anchor="mm")
     y += 62
 
+    # Section header
+    draw.text((20, y+4), "SEUS BOLOES", font=FH(9), fill=PRIMARY, anchor="lm")
+    lx = 20 + int(draw.textlength("SEUS BOLOES  ", font=FH(9)))
+    draw.line([(lx, y+8), (W-20, y+8)], fill=OUTV, width=1)
+    y += 24
+
     pools = [
-        ("Bolao da Galera",  "UEFA Champions League", "8 membros", "6 jogos"),
-        ("Champions 2024",   "Champions League",      "5 membros", "8 jogos"),
-        ("Copa do Brasil",   "Copa do Brasil",        "4 membros", "4 jogos"),
+        ("Bolao da Galera",  "UEFA Champions League", "8", "6"),
+        ("Champions 2024",   "Champions League",      "5", "8"),
+        ("Copa do Brasil",   "Copa do Brasil",        "4", "4"),
     ]
     for name, comp, members, matches in pools:
-        ch = 80
-        card_shadow(img, 20, y, W-20, y+ch)
-        vgrad(img, 20, y, W-20, y+ch, RADIUS, C["green"], C["green_dark"])
-
-        # Competition icon box
-        rr(draw, 32, y+17, 78, y+63, 10, fill=C["green_mid"])
-        _icon_trophy(draw, 55, y+40, 10, C["amber"])
-
-        # Pool info
-        tx = 90
-        draw.text((tx, y+20), name, font=FH(16), fill=C["off_white"], anchor="lm")
-        draw.text((tx, y+39), comp, font=FB(11), fill=C["muted"], anchor="lm")
-        draw.text((tx, y+57), f"{members}   {matches}", font=FB(11), fill=C["muted"], anchor="lm")
-
+        ch = 78
+        # Card
+        accent_card(img, draw, 0, y, W, y+ch)
+        # Left border (already done by accent_card)
+        # Icon box
+        draw.rectangle([20, y+16, 64, y+62], fill=SURF_HHI)
+        draw.text((42, y+39), "T", font=FH(20), fill=PRIMARY, anchor="mm")
+        # Content
+        draw.text((76, y+22), name, font=FH(15), fill=ON_SURF, anchor="lm")
+        draw.text((76, y+40), comp, font=FB(10), fill=ON_SV, anchor="lm")
+        draw.text((76, y+57), f"{members} membros   {matches} jogos", font=FB(10), fill=ON_SV, anchor="lm")
         # Chevron
-        draw.text((W-22, y+40), ">", font=FH(18), fill=C["muted"], anchor="mm")
-        y += ch + 12
+        draw.text((W-16, y+39), ">", font=FH(16), fill=ON_SV, anchor="mm")
+        y += ch + 1
 
     img.save(os.path.join(OUT, "02_home.png"))
     print("  02_home.png")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# SCREEN 3 — Pool Detail (Jogos tab)
+# SCREEN 3 — Pool Detail
 # ─────────────────────────────────────────────────────────────────────────────
 def screen_pool_detail():
-    img  = Image.new("RGB", (W, H), C["cream"])
+    img  = Image.new("RGB", (W, H), BG)
     draw = ImageDraw.Draw(img)
 
-    body_y = appbar_pool(draw, img, "Bolao da Galera", "UEFA Champions League",
+    body_y = appbar_pool(draw, "Bolao da Galera", "UEFA Champions League",
                          ["JOGOS", "RANKING", "MEMBROS"], sel=0)
-    body_y += 16
 
-    # Fixed-center-width (104px) — matches MatchTeamsRow.centerWidth
     CW = 104
-    TEAM_L = (W - 32 - CW) // 2   # width for each team name column
+    TEAM_L = (W - CW) // 2
+    home_xr = TEAM_L
+    away_xl = TEAM_L + CW
+    cx = TEAM_L + CW // 2
 
     matches = [
-        ("live",      "Real Madrid",     "Barcelona",  2, 1,    "45"),
+        ("live",      "Real Madrid",     "Barcelona",  2, 1, "45"),
         ("scheduled", "Manchester City", "Arsenal",    None, None, "14/06  21:00"),
-        ("finished",  "Bayern Munich",   "PSG",        3, 1,    "Encerrado"),
+        ("finished",  "Bayern Munich",   "PSG",        3, 1, "Encerrado"),
     ]
 
     for status, home, away, sh, sa, label in matches:
-        ch = 90
+        ch = 84
         is_live = status == "live"
-        card_shadow(img, 16, body_y, W-16, body_y+ch)
-        vgrad(img, 16, body_y, W-16, body_y+ch, RADIUS, C["green"], C["green_dark"])
-        if is_live:
-            rr(draw, 16, body_y, W-16, body_y+ch, RADIUS, outline=C["live_red"], w=2)
+        accent_card(img, draw, 0, body_y, W, body_y+ch,
+                    accent=True, border_color=ERROR if is_live else None)
 
-        # ── Status row (fixed height 22px) ──────────────────────────────────
-        sy = body_y + 14
+        # Status row (22px)
         if is_live:
-            rr(draw, 28, sy, 28+90, sy+16, 3, fill=C["live_red"])
-            draw.text((73, sy+8), f"AO VIVO  {label}'", font=FH(10),
-                      fill=C["white"], anchor="mm")
+            rr(draw, 20, body_y+10, 100, body_y+26, 3,
+               fill=(*ERROR, 40), outline=ERROR, w=1)
+            draw.text((60, body_y+18), f"AO VIVO {label}'", font=FH(9),
+                      fill=ERROR, anchor="mm")
         else:
-            draw.text((28, sy+8), label, font=FB(10), fill=C["muted"], anchor="lm")
+            draw.text((20, body_y+18), label, font=FB(9), fill=ON_SV, anchor="lm")
 
-        # ── Teams row (fixed geometry) ───────────────────────────────────────
+        # Teams + score
         ty = body_y + 58
-        home_x_right = 16 + TEAM_L         # right edge of home team area
-        away_x_left  = home_x_right + CW   # left edge of away team area
-        cx = home_x_right + CW // 2        # center point
-
-        draw.text((home_x_right - 4, ty), home, font=FH(14), fill=C["off_white"], anchor="rm")
-        draw.text((away_x_left  + 4, ty), away, font=FH(14), fill=C["off_white"], anchor="lm")
-
+        draw.text((home_xr - 4, ty), home, font=FH(13), fill=ON_SURF, anchor="rm")
+        draw.text((away_xl + 4, ty), away, font=FH(13), fill=ON_SURF, anchor="lm")
         if sh is not None:
-            draw.text((cx, ty), f"{sh}  x  {sa}", font=FH(24), fill=C["amber"], anchor="mm")
+            draw.text((cx, ty), f"{sh}  x  {sa}", font=FH(22), fill=PRIMARY, anchor="mm")
         else:
-            draw.text((cx, ty), "x", font=FH(20), fill=C["muted"], anchor="mm")
+            draw.text((cx, ty), "VS", font=FH(20), fill=PRIMARY, anchor="mm")
 
-        body_y += ch + 10
+        body_y += ch + 1
 
     img.save(os.path.join(OUT, "03_pool_detail.png"))
     print("  03_pool_detail.png")
@@ -379,77 +300,62 @@ def screen_pool_detail():
 # SCREEN 4 — Predictions
 # ─────────────────────────────────────────────────────────────────────────────
 def screen_predictions():
-    img  = Image.new("RGB", (W, H), C["cream"])
+    img  = Image.new("RGB", (W, H), BG)
     draw = ImageDraw.Draw(img)
 
-    body_y = appbar_pool(draw, img, "Bolao da Galera", "UEFA Champions League",
+    body_y = appbar_pool(draw, "Bolao da Galera", "UEFA Champions League",
                          ["JOGOS", "RANKING", "MEMBROS"], sel=0)
-    body_y += 16
 
-    CW = 104  # fixed center width (matches Flutter MatchTeamsRow.centerWidth)
-    TEAM_L = (W - 32 - CW) // 2
-    home_xr = 16 + TEAM_L
-    away_xl = home_xr + CW
-    cx = home_xr + CW // 2
+    CW = 104
+    TEAM_L = (W - CW) // 2
+    home_xr = TEAM_L
+    away_xl = TEAM_L + CW
+    cx = TEAM_L + CW // 2
 
-    # Date header
-    draw.text((20, body_y + 4), "14/06", font=FH(12), fill=C["muted_dk"], anchor="lm")
-    body_y += 28
+    draw.text((20, body_y+14), "14/06", font=FH(11), fill=ON_SV, anchor="lm")
+    body_y += 32
 
-    # ── Card 1: user actively typing 2 x 1 ───────────────────────────────────
-    ch = 100
-    card_shadow(img, 16, body_y, W-16, body_y+ch)
-    vgrad(img, 16, body_y, W-16, body_y+ch, RADIUS, C["green"], C["green_dark"])
-
-    # Header row (22px tall)
-    draw.text((28, body_y+14+3), "21:00", font=FB(10), fill=C["muted"], anchor="lm")
-    draw.text((W-28, body_y+14+3), "salvando...", font=FB(10), fill=C["amber"], anchor="rm")
-    # Tiny spinner circle
-    draw.ellipse([W-97, body_y+17, W-89, body_y+25], outline=C["amber"], width=1)
-
+    # Card 1 — user typing 2 x 1
+    ch = 96
+    accent_card(img, draw, 0, body_y, W, body_y+ch)
+    draw.text((20, body_y+14), "21:00", font=FB(9), fill=ON_SV, anchor="lm")
+    draw.text((W-20, body_y+14), "salvando...", font=FB(9), fill=PRIMARY, anchor="rm")
     ty = body_y + 62
-    draw.text((home_xr-4, ty), "Manchester City", font=FH(13), fill=C["off_white"], anchor="rm")
-    draw.text((away_xl+4, ty), "Arsenal",         font=FH(13), fill=C["off_white"], anchor="lm")
-    # Score inputs (44x44) centered within the 104px zone
+    draw.text((home_xr-4, ty), "Manchester City", font=FH(12), fill=ON_SURF, anchor="rm")
+    draw.text((away_xl+4, ty), "Arsenal",         font=FH(12), fill=ON_SURF, anchor="lm")
     bx1 = cx - 48
     bx2 = cx + 4
     for bx, val in [(bx1, "2"), (bx2, "1")]:
-        rr(draw, bx, ty-22, bx+44, ty+22, 8, fill=C["green_mid"], outline=C["amber"], w=2)
-        draw.text((bx+22, ty), val, font=FH(22), fill=C["amber"], anchor="mm")
-    draw.text((cx, ty), "x", font=FH(14), fill=C["muted"], anchor="mm")
-    body_y += ch + 10
+        draw.rectangle([bx, ty-22, bx+44, ty+22], fill=BG, outline=PRIMARY, width=2)
+        draw.text((bx+22, ty), val, font=FH(24), fill=PRIMARY, anchor="mm")
+    draw.text((cx-2, ty), "x", font=FB(12), fill=ON_SV, anchor="mm")
+    body_y += ch + 1
 
-    # ── Card 2: empty inputs ──────────────────────────────────────────────────
-    ch = 100
-    card_shadow(img, 16, body_y, W-16, body_y+ch)
-    vgrad(img, 16, body_y, W-16, body_y+ch, RADIUS, C["green"], C["green_dark"])
-    draw.text((28, body_y+14+3), "14/06  18:45", font=FB(10), fill=C["muted"], anchor="lm")
+    # Card 2 — empty
+    ch = 96
+    accent_card(img, draw, 0, body_y, W, body_y+ch)
+    draw.text((20, body_y+14), "14/06  18:45", font=FB(9), fill=ON_SV, anchor="lm")
     ty2 = body_y + 62
-    draw.text((home_xr-4, ty2), "Real Madrid", font=FH(13), fill=C["off_white"], anchor="rm")
-    draw.text((away_xl+4, ty2), "Atletico",    font=FH(13), fill=C["off_white"], anchor="lm")
+    draw.text((home_xr-4, ty2), "Real Madrid", font=FH(12), fill=ON_SURF, anchor="rm")
+    draw.text((away_xl+4, ty2), "Atletico",    font=FH(12), fill=ON_SURF, anchor="lm")
     for bx in [bx1, bx2]:
-        rr(draw, bx, ty2-22, bx+44, ty2+22, 8, fill=C["green_mid"], outline=C["green_lt"], w=1)
-    draw.text((cx, ty2), "x", font=FH(14), fill=C["muted"], anchor="mm")
-    body_y += ch + 10
+        draw.rectangle([bx, ty2-22, bx+44, ty2+22], fill=SURF_HHI, outline=OUTV, width=1)
+    draw.text((cx-2, ty2), "x", font=FB(12), fill=ON_SV, anchor="mm")
+    body_y += ch + 1
 
-    # ── Card 3: locked — finished match with recap ────────────────────────────
-    ch = 108
-    card_shadow(img, 16, body_y, W-16, body_y+ch)
-    vgrad(img, 16, body_y, W-16, body_y+ch, RADIUS, C["green"], C["green_dark"])
-    # Header
-    _icon_lock(draw, W-84, body_y+14+4, 7, C["muted"])
-    draw.text((W-72, body_y+14+4), "encerrado", font=FB(10), fill=C["muted"], anchor="lm")
-    # Teams + score
-    ty3 = body_y + 58
-    draw.text((home_xr-4, ty3), "Bayern Munich", font=FH(13), fill=C["off_white"], anchor="rm")
-    draw.text((away_xl+4, ty3), "PSG",           font=FH(13), fill=C["off_white"], anchor="lm")
-    draw.text((cx, ty3), "3  x  1", font=FH(26), fill=C["amber"], anchor="mm")
+    # Card 3 — locked
+    ch = 104
+    accent_card(img, draw, 0, body_y, W, body_y+ch)
+    draw.text((W-20, body_y+14), "encerrado", font=FB(9), fill=ON_SV, anchor="rm")
+    ty3 = body_y + 56
+    draw.text((home_xr-4, ty3), "Bayern Munich", font=FH(12), fill=ON_SURF, anchor="rm")
+    draw.text((away_xl+4, ty3), "PSG",           font=FH(12), fill=ON_SURF, anchor="lm")
+    draw.text((cx, ty3), "3  x  1", font=FH(24), fill=PRIMARY, anchor="mm")
     # Recap row
-    recap_y = body_y + 88
-    # Divider line
-    draw.line([(28, recap_y-4), (W-28, recap_y-4)], fill=C["green_lt"], width=1)
-    draw.text((28, recap_y+4), "Seu palpite: 3 x 1", font=FB(11), fill=C["muted"], anchor="lm")
-    pts_badge(draw, W-90, recap_y+4, "+3 pts", C["gold"])
+    recap_y = body_y + 86
+    draw.line([(20, recap_y-4), (W-20, recap_y-4)], fill=OUTV, width=1)
+    draw.text((20, recap_y+4), "Seu palpite: 3 x 1", font=FB(10), fill=ON_SV, anchor="lm")
+    pts_badge(draw, W-82, recap_y+4, "+3 pts", SECOND)
 
     img.save(os.path.join(OUT, "04_predictions.png"))
     print("  04_predictions.png")
@@ -459,71 +365,72 @@ def screen_predictions():
 # SCREEN 5 — Ranking
 # ─────────────────────────────────────────────────────────────────────────────
 def screen_ranking():
-    img  = Image.new("RGB", (W, H), C["cream"])
+    img  = Image.new("RGB", (W, H), BG)
     draw = ImageDraw.Draw(img)
 
-    body_y = appbar_pool(draw, img, "Bolao da Galera", "UEFA Champions League",
+    body_y = appbar_pool(draw, "Bolao da Galera", "UEFA Champions League",
                          ["JOGOS", "RANKING", "MEMBROS"], sel=1)
-    body_y += 12
 
     entries = [
-        (1, "R", "Rafael Dona",  47, True,  "3 placares exatos", C["gold"],   26),
-        (2, "M", "Marcos Silva", 23, False, None,                 C["silver"], 20),
-        (3, "A", "Ana Costa",    18, False, None,                 C["bronze"], 20),
-        (4, "C", "Carlos",       12, False, None,                 C["muted_dk"], 18),
+        (1, "R", "Rafael Dona",  47, True,  "3 placares exatos", SECOND, 22),
+        (2, "M", "Marcos Silva", 23, False, None,                 SILVER, 16),
+        (3, "A", "Ana Costa",    18, False, None,                 BRONZE, 16),
+        (4, "C", "Carlos",       12, False, None,                 ON_SV,  14),
     ]
 
     for pos, init, name, pts, is_me, subtitle, pos_color, pos_sz in entries:
-        rh = 66 if subtitle else 52
+        rh = 64 if subtitle else 52
         mid = body_y + rh // 2
 
+        # Row background
         if is_me:
-            rr(draw, 16, body_y, W-16, body_y+rh, 10,
-               fill=(245, 226, 190), outline=C["amber"], w=2)
-        elif pos <= 3:
-            rr(draw, 16, body_y, W-16, body_y+rh, 10, fill=(230, 240, 232))
+            draw.rectangle([0, body_y, W, body_y+rh], fill=(30, 50, 30))
+            draw.rectangle([0, body_y, 3, body_y+rh], fill=PRIMARY)
+        elif pos == 1:
+            draw.rectangle([0, body_y, W, body_y+rh], fill=(36, 32, 18))
+        else:
+            draw.rectangle([0, body_y, W, body_y+rh], fill=BG)
+        draw.line([(0, body_y+rh-1), (W, body_y+rh-1)], fill=OUTV, width=1)
 
-        # Position (fixed 36px column)
-        draw.text((28, mid), f"{pos}.", font=FH(pos_sz), fill=pos_color, anchor="lm")
+        draw.text((14, mid), f"{pos}.", font=FH(pos_sz),
+                  fill=pos_color, anchor="lm")
+        avatar(draw, 60, mid, 18, init,
+               bg=(60, 48, 8) if pos == 1 else SURF_HHI,
+               fg=SECOND if pos == 1 else PRIMARY)
 
-        # Avatar
-        _avatar(draw, 72, mid, 18, init)
-
-        # Name + subtitle
         ny = mid - (7 if subtitle else 0)
-        nf = FH(14) if is_me else FB(13)
-        draw.text((100, ny), name, font=nf, fill=C["dark_text"], anchor="lm")
+        name_color = PRIMARY if is_me else SECOND if pos == 1 else ON_SURF
+        draw.text((88, ny), name, font=FH(13) if is_me else FB(13),
+                  fill=name_color, anchor="lm")
         if subtitle:
-            draw.text((100, mid + 9), subtitle, font=FB(10), fill=C["muted_dk"], anchor="lm")
+            draw.text((88, mid+10), subtitle, font=FB(9), fill=SECOND, anchor="lm")
 
-        # Points (right-aligned, stacked)
-        draw.text((W-32, mid-5), str(pts), font=FH(24),
-                  fill=C["amber"] if is_me else C["dark_text"], anchor="rm")
-        draw.text((W-32, mid+11), "pts", font=FB(10), fill=C["muted_dk"], anchor="rm")
+        pts_color = PRIMARY if is_me else SECOND if pos == 1 else ON_SURF
+        draw.text((W-20, mid-6), str(pts), font=FH(20), fill=pts_color, anchor="rm")
+        draw.text((W-20, mid+10), "pts", font=FB(9), fill=ON_SV, anchor="rm")
 
-        body_y += rh + 8
+        body_y += rh
 
-    # ── Sticky footer — current user ─────────────────────────────────────────
-    fy = H - 68
-    draw.rectangle([0, fy - 1, W, H], fill=C["cream"])
-    draw.line([(0, fy - 1), (W, fy - 1)], fill=C["divider"], width=1)
-    rr(draw, 16, fy + 4, W - 16, fy + 54, 10,
-       fill=(245, 226, 190), outline=C["amber"], w=2)
-    _avatar(draw, 50, fy + 29, 16, "R")
-    draw.text((74, fy + 21), "Rafael Dona", font=FH(13), fill=C["dark_text"], anchor="lm")
-    draw.text((74, fy + 37), "Sua posicao", font=FB(10), fill=C["muted_dk"], anchor="lm")
-    draw.text((W - 28, fy + 20), "1.", font=FH(22), fill=C["gold"], anchor="rm")
-    draw.text((W - 28, fy + 40), "47 pts", font=FH(12), fill=C["amber"], anchor="rm")
+    # Sticky footer
+    fy = H - 66
+    draw.rectangle([0, fy-1, W, H], fill=BG)
+    draw.line([(0, fy-1), (W, fy-1)], fill=OUTV, width=1)
+    draw.rectangle([0, fy+3, W, fy+55], fill=(25, 45, 25))
+    draw.rectangle([0, fy+3, 3, fy+55], fill=PRIMARY)
+    avatar(draw, 48, fy+29, 16, "R")
+    draw.text((72, fy+21), "Rafael Dona", font=FH(13), fill=PRIMARY, anchor="lm")
+    draw.text((72, fy+38), "Sua posicao", font=FB(9), fill=ON_SV, anchor="lm")
+    draw.text((W-16, fy+20), "1.", font=FH(20), fill=SECOND, anchor="rm")
+    draw.text((W-16, fy+40), "47 pts", font=FH(11), fill=PRIMARY, anchor="rm")
 
     img.save(os.path.join(OUT, "05_ranking.png"))
     print("  05_ranking.png")
 
 
-# ── Run ───────────────────────────────────────────────────────────────────────
-print("Generating screenshots...")
+print("Generating dark-theme screenshots...")
 screen_login()
 screen_home()
 screen_pool_detail()
 screen_predictions()
 screen_ranking()
-print(f"\nDone. Saved to: {OUT}")
+print(f"\nDone -> {OUT}")

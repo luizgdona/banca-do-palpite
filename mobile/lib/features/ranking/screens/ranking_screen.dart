@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/models/ranking_model.dart';
 import '../../../core/providers/predictions_provider.dart';
 import '../../../core/theme/app_colors.dart';
@@ -39,21 +40,23 @@ class RankingScreen extends ConsumerWidget {
           children: [
             ListView.builder(
               padding: EdgeInsets.fromLTRB(
-                  AppSpacing.base, AppSpacing.base, AppSpacing.base,
-                  myEntry != null ? 80 : AppSpacing.base),
+                0, AppSpacing.sm, 0,
+                myEntry != null ? 80 : AppSpacing.base,
+              ),
               itemCount: entries.length,
-              itemBuilder: (ctx, i) => _RankingRow(entry: entries[i]),
+              itemBuilder: (ctx, i) => _RankingRow(
+                entry: entries[i],
+                rank: i + 1,
+              ),
             ),
             if (myEntry != null && myEntry.position > 5)
               Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
+                bottom: 0, left: 0, right: 0,
                 child: Container(
-                  color: AppColors.cream,
+                  color: AppColors.background,
                   padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.base, AppSpacing.sm, AppSpacing.base, AppSpacing.base),
-                  child: _RankingRow(entry: myEntry, sticky: true),
+                    0, AppSpacing.xs, 0, AppSpacing.base),
+                  child: _RankingRow(entry: myEntry, rank: myEntry.position, sticky: true),
                 ),
               ),
           ],
@@ -65,59 +68,70 @@ class RankingScreen extends ConsumerWidget {
 
 class _RankingRow extends StatelessWidget {
   final RankingEntry entry;
+  final int rank;
   final bool sticky;
 
-  const _RankingRow({required this.entry, this.sticky = false});
+  const _RankingRow({required this.entry, required this.rank, this.sticky = false});
 
   static const _medalColors = [
-    AppColors.exactColor,
+    AppColors.goldMedal,
     AppColors.silverMedal,
     AppColors.bronzeMedal,
   ];
 
   @override
   Widget build(BuildContext context) {
-    final isTop3 = entry.position <= 3;
-    final posColor = isTop3
-        ? _medalColors[entry.position - 1]
-        : AppColors.mutedDark;
-
-    final bgColor = entry.isMe
-        ? AppColors.amber.withAlpha(20)
-        : isTop3
-            ? AppColors.green.withAlpha(10)
-            : Colors.transparent;
+    final isTop3 = rank <= 3;
+    final isFirst = rank == 1;
+    final posColor = isTop3 ? _medalColors[rank - 1] : AppColors.onSurfaceVariant;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.xs + 2),
+      margin: const EdgeInsets.only(bottom: 1),
+      decoration: BoxDecoration(
+        color: isFirst && !sticky
+            ? AppColors.secondary.withAlpha(15)
+            : entry.isMe
+                ? AppColors.primary.withAlpha(10)
+                : (sticky ? AppColors.surfaceContainerHigh : AppColors.background),
+        border: entry.isMe
+            ? Border(
+                left: BorderSide(color: AppColors.primary, width: 3),
+                bottom: BorderSide(color: AppColors.outlineVariant, width: 0.5),
+              )
+            : Border(
+                bottom: BorderSide(
+                  color: AppColors.outlineVariant.withAlpha(40),
+                  width: 0.5,
+                ),
+              ),
+      ),
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.base,
-        vertical: AppSpacing.sm + 2,
-      ),
-      decoration: BoxDecoration(
-        color: sticky ? AppColors.inputFill : bgColor,
-        borderRadius: AppSpacing.inputRadius,
-        border: entry.isMe
-            ? Border.all(color: AppColors.amber.withAlpha(120), width: 1.5)
-            : sticky
-                ? Border.all(color: AppColors.divider)
-                : null,
-        boxShadow: entry.isMe ? AppSpacing.subtleShadow : null,
+        vertical: AppSpacing.md,
       ),
       child: Row(
         children: [
-          // Position — fixed width so all rows align
+          // Position — fixed width
           SizedBox(
             width: 36,
             child: Text(
-              '${entry.position}°',
-              style: (isTop3
-                      ? AppTextStyles.rankPositionTop
-                      : AppTextStyles.rankPosition)
-                  .copyWith(color: posColor),
+              '$rank.',
+              style: GoogleFonts.lexend(
+                fontSize: isTop3 ? 20 : 16,
+                fontWeight: FontWeight.w900,
+                fontStyle: FontStyle.italic,
+                color: posColor,
+              ),
             ),
           ),
-          AppAvatar(name: entry.user.name),
+          // Avatar
+          AppAvatar(
+            name: entry.user.name,
+            backgroundColor: isFirst
+                ? AppColors.secondary.withAlpha(30)
+                : AppColors.surfaceContainerHighest,
+            textColor: isFirst ? AppColors.secondary : AppColors.primary,
+          ),
           AppSpacing.gapMdH,
           // Name + subtitle
           Expanded(
@@ -130,15 +144,17 @@ class _RankingRow extends StatelessWidget {
                   style: AppTextStyles.memberName.copyWith(
                     fontWeight:
                         entry.isMe ? FontWeight.w700 : FontWeight.w500,
-                    color: AppColors.darkText,
+                    color: entry.isMe ? AppColors.primary : AppColors.onSurface,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (entry.exactCount > 0)
                   Text(
-                    '${entry.exactCount} placares exatos 🎯',
-                    style: AppTextStyles.micro,
+                    '${entry.exactCount} placares exatos',
+                    style: AppTextStyles.micro.copyWith(
+                      color: AppColors.secondary,
+                    ),
                   ),
               ],
             ),
@@ -150,8 +166,14 @@ class _RankingRow extends StatelessWidget {
             children: [
               Text(
                 '${entry.totalPoints}',
-                style: AppTextStyles.rankPoints.copyWith(
-                  color: entry.isMe ? AppColors.amber : AppColors.darkText,
+                style: GoogleFonts.lexend(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: entry.isMe
+                      ? AppColors.primary
+                      : isFirst
+                          ? AppColors.secondary
+                          : AppColors.onSurface,
                 ),
               ),
               Text('pts', style: AppTextStyles.micro),

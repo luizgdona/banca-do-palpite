@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_colors.dart';
 
-/// Circular avatar showing the first letter of [name].
+/// Circular avatar showing initial letter. Dark theme version.
 class AppAvatar extends StatelessWidget {
   final String name;
   final double radius;
@@ -13,21 +13,20 @@ class AppAvatar extends StatelessWidget {
     super.key,
     required this.name,
     this.radius = 18,
-    this.backgroundColor = AppColors.green,
-    this.textColor = AppColors.amber,
+    this.backgroundColor = AppColors.surfaceContainerHighest,
+    this.textColor = AppColors.primary,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Use a slightly smaller font ratio so the letter sits comfortably
-    final fontSize = (radius * 0.95).clamp(10.0, 36.0);
+    final fontSize = (radius * 0.9).clamp(10.0, 36.0);
     return CircleAvatar(
       radius: radius,
       backgroundColor: backgroundColor,
       child: Text(
         name.isNotEmpty ? name[0].toUpperCase() : '?',
-        style: GoogleFonts.barlowCondensed(
-          fontWeight: FontWeight.w900,
+        style: GoogleFonts.lexend(
+          fontWeight: FontWeight.w800,
           fontSize: fontSize,
           color: textColor,
           height: 1,

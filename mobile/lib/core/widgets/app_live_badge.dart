@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
-/// Pulsing "AO VIVO" badge with optional match minute.
+/// Pulsing "AO VIVO" badge — matches the Stitch live indicator style.
 class AppLiveBadge extends StatefulWidget {
   final int? minute;
   const AppLiveBadge({super.key, this.minute});
@@ -44,10 +45,19 @@ class _AppLiveBadgeState extends State<AppLiveBadge>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(
-          color: AppColors.liveBadge,
+          color: AppColors.error.withAlpha(30),
           borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: AppColors.error.withAlpha(80), width: 1),
         ),
-        child: Text(label, style: AppTextStyles.liveBadgeLabel),
+        child: Text(
+          label,
+          style: GoogleFonts.spaceGrotesk(
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            color: AppColors.error,
+            letterSpacing: 0.8,
+          ),
+        ),
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../layout/app_shell.dart';
 import '../providers/auth_provider.dart';
 import '../../features/auth/screens/splash_screen.dart';
 import '../../features/auth/screens/onboarding_screen.dart';
@@ -28,10 +29,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isAuth = authState?.status == AuthStatus.authenticated;
 
       final publicPaths = ['/login', '/register', '/onboarding'];
-      final isPublicRoute = publicPaths.any(
-        (p) => state.matchedLocation.startsWith(p),
-      );
-      // /join/:code is accessible but redirects to login if unauthenticated
+      final isPublicRoute =
+          publicPaths.any((p) => state.matchedLocation.startsWith(p));
       final isJoinRoute = state.matchedLocation.startsWith('/join/');
 
       if (!isAuth && !isPublicRoute && !isJoinRoute) return '/onboarding';
@@ -43,45 +42,83 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
       GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
-      GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
-      GoRoute(path: '/pool/create', builder: (_, __) => const CreatePoolScreen()),
-      GoRoute(
-        path: '/pool/:id',
-        builder: (_, state) => PoolDetailScreen(poolId: state.pathParameters['id']!),
+
+      // ── Authenticated shell (sidebar + bottom nav) ───────────────────────
+      ShellRoute(
+        builder: (context, state, child) => AppShell(child: child),
         routes: [
+          GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
           GoRoute(
-            path: 'match/:matchId',
-            builder: (_, state) {
-              // Pool is passed via extra to avoid refetching
-              final pool = state.extra;
-              if (pool == null) {
-                return PoolDetailScreen(poolId: state.pathParameters['id']!);
+            path: '/pool/create',
+            builder: (_, __) => const CreatePoolScreen(),
+          ),
+          GoRoute(
+            path: '/pool/:id',
+            builder: (_, state) =>
+                PoolDetailScreen(poolId: state.pathParameters['id']!),
+            routes: [
+              GoRoute(
+                path: 'match/:matchId',
+                builder: (_, state) {
+                  final pool = state.extra;
+                  if (pool == null) {
+                    return PoolDetailScreen(
+                        poolId: state.pathParameters['id']!);
+                  }
+                  return LiveMatchScreen(
+                    pool: pool as dynamic,
+                    matchId: state.pathParameters['matchId']!,
+                  );
+                },
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/join/:code',
+            redirect: (context, state) {
+              final auth = ref.read(authProvider).valueOrNull;
+              if (auth?.status != AuthStatus.authenticated) {
+                return '/login?redirect=${Uri.encodeComponent(state.uri.toString())}';
               }
-              return LiveMatchScreen(
-                pool: pool as dynamic,
-                matchId: state.pathParameters['matchId']!,
-              );
+              return null;
             },
+            builder: (_, state) =>
+                JoinPoolScreen(inviteCode: state.pathParameters['code']!),
+          ),
+          GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
+          // Placeholder routes referenced in sidebar
+          GoRoute(
+            path: '/ranking',
+            builder: (_, __) => const Scaffold(
+              backgroundColor: Color(0xFF0E0E0E),
+              body: Center(child: Text('Ranking', style: TextStyle(color: Colors.white))),
+            ),
+          ),
+          GoRoute(
+            path: '/participants',
+            builder: (_, __) => const Scaffold(
+              backgroundColor: Color(0xFF0E0E0E),
+              body: Center(child: Text('Participantes', style: TextStyle(color: Colors.white))),
+            ),
+          ),
+          GoRoute(
+            path: '/results',
+            builder: (_, __) => const Scaffold(
+              backgroundColor: Color(0xFF0E0E0E),
+              body: Center(child: Text('Resultados', style: TextStyle(color: Colors.white))),
+            ),
           ),
         ],
       ),
-      GoRoute(
-        path: '/join/:code',
-        redirect: (context, state) {
-          final auth = ref.read(authProvider).valueOrNull;
-          if (auth?.status != AuthStatus.authenticated) {
-            return '/login?redirect=${Uri.encodeComponent(state.uri.toString())}';
-          }
-          return null;
-        },
-        builder: (_, state) => JoinPoolScreen(
-          inviteCode: state.pathParameters['code']!,
-        ),
-      ),
-      GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
     ],
     errorBuilder: (context, state) => Scaffold(
-      body: Center(child: Text('Página não encontrada: ${state.error}')),
+      backgroundColor: const Color(0xFF0E0E0E),
+      body: Center(
+        child: Text(
+          'Página não encontrada: ${state.error}',
+          style: const TextStyle(color: Colors.white),
+        ),
+      ),
     ),
   );
 });
